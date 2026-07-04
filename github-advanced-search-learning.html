@@ -28,36 +28,29 @@
 <meta name="generator" content="Hexo"></head>
 <body>
   <div class="site-shell">
-    <header class="site-header">
-      <div class="brand-line"></div>
-      <div class="site-meta">
-        <a class="brand" href="/" rel="start">
-          <span class="logo-line"></span>
-          <span class="site-title">Kevin&#39;s Blog</span>
-          <span class="logo-line"></span>
-        </a>
-      </div>
-      <button class="nav-toggle" type="button" aria-label="Toggle navigation">
-        <span></span><span></span><span></span>
-      </button>
-      <nav class="site-nav" aria-label="Main navigation">
-        
-          <a class="" href="/">Home</a>
-        
-          <a class="" href="/tags/">Tags</a>
-        
-          <a class="" href="/categories/">Categories</a>
-        
-          <a class="" href="/archives/">Archives</a>
-        
-        <button class="search-trigger" type="button">Search</button>
-      </nav>
-    </header>
-
     <main class="main">
       <div class="main-inner">
         <aside class="sidebar">
           <div class="sidebar-inner">
+            <div class="brand-line"></div>
+            <div class="site-meta">
+              <a class="brand" href="/" rel="start">
+                <span class="site-title">Kevin&#39;s Blog</span>
+              </a>
+            </div>
+            <nav class="site-nav" aria-label="Main navigation">
+              
+                <a class="" href="/">Home</a>
+              
+                <a class="" href="/tags/">Tags</a>
+              
+                <a class="" href="/categories/">Categories</a>
+              
+                <a class="" href="/archives/">Archives</a>
+              
+              <button class="search-trigger" type="button">Search</button>
+            </nav>
+
             <a class="site-author-image-link" href="/">
               <img class="site-author-image" src="/img/kevin.jpg" alt="kevin">
             </a>
@@ -77,6 +70,25 @@
                 <span>Tags</span>
               </a>
             </div>
+            
+              <section class="sidebar-section sidebar-tags">
+                <h2 class="sidebar-section-title">Tag Cloud</h2>
+                <div class="sidebar-tag-canvas" id="sidebarTagCanvasWrap">
+                  <canvas id="sidebarTagCanvas" width="216" height="216"></canvas>
+                  <div id="sidebarTagList" class="sidebar-tag-list" aria-label="Tag cloud links">
+                    
+                      <a href="/tags/GitHub/">GitHub</a>
+                    
+                      <a href="/tags/search/">search</a>
+                    
+                      <a href="/tags/%E5%BC%80%E6%BA%90/">开源</a>
+                    
+                      <a href="/tags/%E6%90%9C%E7%B4%A2%E6%8A%80%E5%B7%A7/">搜索技巧</a>
+                    
+                  </div>
+                </div>
+              </section>
+            
           </div>
         </aside>
 
@@ -805,6 +817,10 @@ forks:&gt;50</code></pre>
       <script src="/js/jquery-3.4.1.min.js"></script>
     
       <script src="/js/highlight-9.13.1.min.js"></script>
+    
+      <script src="/js/tagcanvas.js"></script>
+    
+      <script src="/js/sidebar-tag-cloud.js"></script>
     
       <script src="/js/local-search.js"></script>
     
