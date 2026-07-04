@@ -150,4 +150,32 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
+
+  document.querySelectorAll('.post-toggle').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var post = button.closest('.post-preview');
+      if (!post) return;
+
+      var excerpt = post.querySelector('.post-excerpt');
+      var body = post.querySelector('.post-inline-body');
+      var expanded = button.getAttribute('aria-expanded') === 'true';
+
+      if (!body || !excerpt) return;
+
+      if (expanded) {
+        body.hidden = true;
+        excerpt.hidden = false;
+        button.textContent = 'Read more';
+        button.setAttribute('aria-expanded', 'false');
+        post.classList.remove('is-expanded');
+        post.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        body.hidden = false;
+        excerpt.hidden = true;
+        button.textContent = '收起';
+        button.setAttribute('aria-expanded', 'true');
+        post.classList.add('is-expanded');
+      }
+    });
+  });
 }());

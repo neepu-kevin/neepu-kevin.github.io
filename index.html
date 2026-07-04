@@ -69,19 +69,20 @@
             
               <section class="sidebar-section sidebar-tags">
                 <h2 class="sidebar-section-title">Tag Cloud</h2>
-                <div class="sidebar-tag-canvas" id="sidebarTagCanvasWrap">
-                  <canvas id="sidebarTagCanvas" width="216" height="216"></canvas>
-                  <div id="sidebarTagList" class="sidebar-tag-list" aria-label="Tag cloud links">
+                <div id="myCanvasContainer" class="sidebar-tag-canvas">
+                  <canvas width="216" height="216" id="resCanvas">
+                    <ul>
                     
-                      <a href="/tags/GitHub/">GitHub</a>
+                      <li><a href="/tags/GitHub/">GitHub</a></li>
                     
-                      <a href="/tags/search/">search</a>
+                      <li><a href="/tags/search/">search</a></li>
                     
-                      <a href="/tags/%E5%BC%80%E6%BA%90/">开源</a>
+                      <li><a href="/tags/%E5%BC%80%E6%BA%90/">开源</a></li>
                     
-                      <a href="/tags/%E6%90%9C%E7%B4%A2%E6%8A%80%E5%B7%A7/">搜索技巧</a>
+                      <li><a href="/tags/%E6%90%9C%E7%B4%A2%E6%8A%80%E5%B7%A7/">搜索技巧</a></li>
                     
-                  </div>
+                    </ul>
+                  </canvas>
                 </div>
               </section>
             
@@ -113,7 +114,87 @@
 常
         
       </div>
-      <a class="read-more" href="/2026/07/04/github-advanced-search/">Read more</a>
+      <div class="post-inline-body markdown-body" hidden>
+        <p>GitHub 的搜索框不只是用来搜项目名。只要给关键词加上一些限定条件，就可以把搜索范围、项目热度、语言、更新时间等条件组合起来，快速找到更接近目标的仓库。</p>
+<p>这篇文章先从最常用的 <code>in:readme</code> 讲起。</p>
+<h2 id="用-in-限定关键词出现的位置"><a class="markdownIt-Anchor" href="#用-in-限定关键词出现的位置"></a> 用 in 限定关键词出现的位置</h2>
+<p>默认搜索仓库时，GitHub 主要会匹配仓库名称、描述和 topics。如果想明确指定搜索范围，可以使用 <code>in:</code>。</p>
+<p>常见写法：</p>
+<ul>
+<li><code>xxx in:name</code>：项目名包含 <code>xxx</code></li>
+<li><code>xxx in:description</code>：项目描述包含 <code>xxx</code></li>
+<li><code>xxx in:readme</code>：README 中包含 <code>xxx</code></li>
+<li><code>xxx in:topics</code>：topics 中包含 <code>xxx</code></li>
+<li><code>xxx in:name,description,readme</code>：同时搜索项目名、描述和 README</li>
+</ul>
+<p>例如，想找 README 里提到 <code>chatgpt</code> 的项目：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chatgpt in:readme</span><br></pre></td></tr></table></figure>
+<p>如果你正在找教程、模板、配置示例，<code>in:readme</code> 往往比只搜项目名更好用。因为很多项目名并不包含关键词，但 README 会写清楚它解决什么问题。</p>
+<h2 id="用-stars-和-forks-筛项目质量"><a class="markdownIt-Anchor" href="#用-stars-和-forks-筛项目质量"></a> 用 stars 和 forks 筛项目质量</h2>
+<p><code>stars</code> 和 <code>forks</code> 可以帮你过滤项目热度。</p>
+<p>常见写法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">stars:&gt;50</span><br><span class="line">stars:10..50</span><br><span class="line">forks:&gt;50</span><br><span class="line">forks:10..50</span><br></pre></td></tr></table></figure>
+<p>组合关键词后会更实用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chatgpt in:readme stars:&gt;100</span><br></pre></td></tr></table></figure>
+<p>这个搜索表示：README 里提到 <code>chatgpt</code>，并且 star 数大于 100 的仓库。</p>
+<p>如果你想找已经有一定社区验证的项目，可以先用 <code>stars:&gt;100</code> 或 <code>stars:&gt;500</code>。如果你想找小而新的项目，可以反过来用较小范围：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chatgpt in:readme stars:10..100</span><br></pre></td></tr></table></figure>
+<h2 id="用-language-限定编程语言"><a class="markdownIt-Anchor" href="#用-language-限定编程语言"></a> 用 language 限定编程语言</h2>
+<p>如果你只想看某种语言写的项目，可以加 <code>language:</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chatgpt in:readme language:Python stars:&gt;100</span><br></pre></td></tr></table></figure>
+<p>这个搜索适合找 Python 相关的 ChatGPT 项目。</p>
+<p>再比如找 TypeScript 写的博客模板：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">blog template in:readme language:TypeScript stars:&gt;50</span><br></pre></td></tr></table></figure>
+<p>如果关键词里有空格，可以加英文双引号：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;github pages&quot; in:readme language:JavaScript stars:&gt;100</span><br></pre></td></tr></table></figure>
+<h2 id="用-pushed-找最近还在维护的项目"><a class="markdownIt-Anchor" href="#用-pushed-找最近还在维护的项目"></a> 用 pushed 找最近还在维护的项目</h2>
+<p>Star 多不代表项目还活着。想避免找到很久没人维护的仓库，可以加 <code>pushed:</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chatgpt in:readme language:Python stars:&gt;100 pushed:&gt;2025-01-01</span><br></pre></td></tr></table></figure>
+<p>这个搜索表示：找 README 提到 <code>chatgpt</code>、主要语言是 Python、star 数大于 100，并且 2025 年 1 月 1 日之后仍然有提交的项目。</p>
+<p>常见时间写法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pushed:&gt;2025-01-01</span><br><span class="line">created:2024-01-01..2024-12-31</span><br></pre></td></tr></table></figure>
+<p><code>pushed</code> 更适合判断项目最近是否活跃；<code>created</code> 更适合找某段时间新建的项目。</p>
+<h2 id="fork-的搜索方式"><a class="markdownIt-Anchor" href="#fork-的搜索方式"></a> fork 的搜索方式</h2>
+<p>GitHub 默认搜索结果不一定包含所有 fork。如果你想把 fork 也纳入结果，可以加：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fork:true</span><br></pre></td></tr></table></figure>
+<p>如果只想看 fork：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fork:only</span><br></pre></td></tr></table></figure>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chatgpt in:readme stars:&gt;100 fork:true</span><br></pre></td></tr></table></figure>
+<h2 id="location-更适合搜用户"><a class="markdownIt-Anchor" href="#location-更适合搜用户"></a> location 更适合搜用户</h2>
+<p><code>location:</code> 主要用于搜索用户资料里的地区，不是仓库本身的地区。</p>
+<p>例如找中国地区、主要写 Python 的用户：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">location:china language:Python</span><br></pre></td></tr></table></figure>
+<p>如果你要搜索仓库，通常更常用的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">language:Python</span><br><span class="line">stars:&gt;100</span><br><span class="line">topic:machine-learning</span><br></pre></td></tr></table></figure>
+<h2 id="我常用的组合模板"><a class="markdownIt-Anchor" href="#我常用的组合模板"></a> 我常用的组合模板</h2>
+<p>找 README 里提到某技术、比较热门、最近还维护的项目：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">关键词 in:readme stars:&gt;100 pushed:&gt;2025-01-01</span><br></pre></td></tr></table></figure>
+<p>找某语言里的高质量项目：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">关键词 in:readme language:Python stars:&gt;500</span><br></pre></td></tr></table></figure>
+<p>找小众但还活跃的新项目：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">关键词 in:readme stars:10..100 pushed:&gt;2025-01-01</span><br></pre></td></tr></table></figure>
+<p>找某个组织下的项目：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">关键词 org:github stars:&gt;100</span><br></pre></td></tr></table></figure>
+<p>找某个用户的项目：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">关键词 user:octocat</span><br></pre></td></tr></table></figure>
+<h2 id="小结"><a class="markdownIt-Anchor" href="#小结"></a> 小结</h2>
+<p>GitHub 高级搜索的核心不是记住所有语法，而是会组合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">关键词 + 搜索范围 + 项目热度 + 技术语言 + 活跃时间</span><br></pre></td></tr></table></figure>
+<p>最推荐先记住这几个：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">in:readme</span><br><span class="line">stars:&gt;100</span><br><span class="line">stars:10..100</span><br><span class="line">forks:&gt;50</span><br><span class="line">language:Python</span><br><span class="line">pushed:&gt;2025-01-01</span><br></pre></td></tr></table></figure>
+<p>以后找项目时，不要只搜一个关键词。先问自己：我要找的是项目名里包含这个词，还是 README 里讲过这个东西？我要热门项目，还是小而新的项目？这样组合出来的搜索语句会精准很多。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories">GitHub Docs: Searching for repositories</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax">GitHub Docs: Understanding the search syntax</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/search-github/searching-on-github/searching-users">GitHub Docs: Searching users</a></li>
+</ul>
+
+      </div>
+      <div class="post-actions">
+        <button class="read-more post-toggle" type="button" aria-expanded="false">Read more</button>
+      </div>
     </article>
   
 
@@ -153,7 +234,7 @@
     
       <script src="/js/tagcanvas.js"></script>
     
-      <script src="/js/sidebar-tag-cloud.js"></script>
+      <script src="/js/tagcloud.js"></script>
     
       <script src="/js/local-search.js"></script>
     

@@ -73,19 +73,20 @@
             
               <section class="sidebar-section sidebar-tags">
                 <h2 class="sidebar-section-title">Tag Cloud</h2>
-                <div class="sidebar-tag-canvas" id="sidebarTagCanvasWrap">
-                  <canvas id="sidebarTagCanvas" width="216" height="216"></canvas>
-                  <div id="sidebarTagList" class="sidebar-tag-list" aria-label="Tag cloud links">
+                <div id="myCanvasContainer" class="sidebar-tag-canvas">
+                  <canvas width="216" height="216" id="resCanvas">
+                    <ul>
                     
-                      <a href="/tags/GitHub/">GitHub</a>
+                      <li><a href="/tags/GitHub/">GitHub</a></li>
                     
-                      <a href="/tags/search/">search</a>
+                      <li><a href="/tags/search/">search</a></li>
                     
-                      <a href="/tags/%E5%BC%80%E6%BA%90/">开源</a>
+                      <li><a href="/tags/%E5%BC%80%E6%BA%90/">开源</a></li>
                     
-                      <a href="/tags/%E6%90%9C%E7%B4%A2%E6%8A%80%E5%B7%A7/">搜索技巧</a>
+                      <li><a href="/tags/%E6%90%9C%E7%B4%A2%E6%8A%80%E5%B7%A7/">搜索技巧</a></li>
                     
-                  </div>
+                    </ul>
+                  </canvas>
                 </div>
               </section>
             
@@ -820,7 +821,7 @@ forks:&gt;50</code></pre>
     
       <script src="/js/tagcanvas.js"></script>
     
-      <script src="/js/sidebar-tag-cloud.js"></script>
+      <script src="/js/tagcloud.js"></script>
     
       <script src="/js/local-search.js"></script>
     
