@@ -1258,7 +1258,7 @@ pre code {
     vertical-align: middle;
   }
   .links-of-author a::before {
-    background: #47cc1c;
+    background: #581741;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2868,20 +2868,33 @@ body::before {
   background-color: rgba(150,205,238,0.55) !important;
 }
 .sidebar-tag-cloud {
-  margin-top: 25px;
+  margin-top: 20px;
+  padding-bottom: 25px;
   text-align: center;
 }
 .sidebar-tag-cloud-title {
   color: #555;
   font-size: 18px;
-  margin: 15px 0 25px;
+  font-weight: bold;
+  margin: 15px 0 10px;
 }
-.sidebar-tag-cloud .tag-cloud-tags {
-  line-height: 1.8;
+.sidebar-tag-cloud-host {
+  margin: 0 auto;
+  max-width: 250px;
+  overflow: hidden;
+  width: 100%;
 }
-.sidebar-tag-cloud .tag-cloud-tags a {
-  display: inline-block;
-  margin: 3px 5px;
+.sidebar-tag-cloud-host #myCanvasContainer {
+  margin: 0 auto;
+  max-width: 250px;
+  width: 100%;
+}
+.sidebar-tag-cloud-host #resCanvas {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  max-width: 250px;
+  width: 100%;
 }
 .search-popup {
   background-color: rgba(225,242,252,0.88) !important;

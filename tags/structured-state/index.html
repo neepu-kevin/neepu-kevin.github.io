@@ -21,7 +21,7 @@
 
     <meta property="og:type" content="website">
 <meta property="og:title" content="Blog">
-<meta property="og:url" content="https://neepu-kevin.github.io/tags/Codex/index.html">
+<meta property="og:url" content="https://neepu-kevin.github.io/tags/structured-state/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:locale" content="en_US">
 <meta property="article:author" content="Kevin">
@@ -29,13 +29,13 @@
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://neepu-kevin.github.io/tags/Codex/">
+<link rel="canonical" href="https://neepu-kevin.github.io/tags/structured-state/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"en","comments":"","permalink":"","path":"tags/Codex/index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"en","comments":"","permalink":"","path":"tags/structured-state/index.html","title":""}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Tag: Codex | Blog</title>
+<title>Tag: structured-state | Blog</title>
   
 
 
@@ -67,7 +67,119 @@
   <noscript>
     <link rel="stylesheet" href="/css/noscript.css">
   </noscript>
-</head>
+<style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
 
 <body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
   <div class="headband"></div>
@@ -178,7 +290,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -197,41 +309,8 @@
 <div class="sidebar-tag-cloud">
   <h2 class="sidebar-tag-cloud-title">Tag Cloud</h2>
 
-  <div class="tag-cloud-tags" id="sidebar-tag-cloud-content"></div>
+  <div class="sidebar-tag-cloud-host"></div>
 </div>
-
-<script>
-(() => {
-  const loadSidebarTagCloud = async () => {
-    const container = document.getElementById('sidebar-tag-cloud-content');
-    if (!container || container.dataset.loaded === 'true') return;
-
-    try {
-      const response = await fetch('/tags/');
-      if (!response.ok) return;
-
-      const html = await response.text();
-      const documentCopy = new DOMParser().parseFromString(html, 'text/html');
-      const tagCloud = documentCopy.querySelector('.tag-cloud-tags');
-
-      if (tagCloud) {
-        container.innerHTML = tagCloud.innerHTML;
-        container.dataset.loaded = 'true';
-      }
-    } catch (error) {
-      console.warn('Unable to load sidebar tag cloud.', error);
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadSidebarTagCloud, { once: true });
-  } else {
-    loadSidebarTagCloud();
-  }
-
-  document.addEventListener('pjax:success', loadSidebarTagCloud);
-})();
-</script>
 
         </div>
       </div>
@@ -256,7 +335,7 @@
   <div class="post-block">
     <div class="post-content">
       <div class="collection-title">
-        <h1 class="collection-header">Codex
+        <h1 class="collection-header">structured-state
           <small>Tag</small>
         </h1>
       </div>
@@ -270,15 +349,15 @@
     <header class="post-header">
       <div class="post-meta-container">
         <time itemprop="dateCreated"
-              datetime="2026-10-12T21:00:00+08:00"
-              content="2026-10-12">
-          10-12
+              datetime="2026-10-23T16:04:00+08:00"
+              content="2026-10-23">
+          10-23
         </time>
       </div>
 
       <div class="post-title">
-          <a class="post-title-link" href="/2026/10/12/Skill-%E4%B8%8E-MCP/" itemprop="url">
-            <span itemprop="name">Codex Skill 与 MCP</span>
+          <a class="post-title-link" href="/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/" itemprop="url">
+            <span itemprop="name">SKILL.state Scalable Long-Horizon Agent Skills</span>
           </a>
       </div>
 
@@ -401,5 +480,5 @@
 
 <!-- 鼠标跟随星点连线动画 -->
 <script defer src="https://cdn.jsdelivr.net/gh/theme-next/theme-next-three@1/canvas_lines.min.js"></script>
-</body>
+<!-- hexo injector body_end start --><script src="/js/tagcanvas.js"></script><script src="/js/tagcloud.js"></script><!-- hexo injector body_end end --></body>
 </html>
