@@ -279,7 +279,7 @@ mjx-container[display="true"] + br {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-count">2</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -290,7 +290,7 @@ mjx-container[display="true"] + br {
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -336,6 +336,117 @@ mjx-container[display="true"] + br {
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://neepu-kevin.github.io/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Kevin">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/" class="post-title-link" itemprop="url">PENCIL: Long Thoughts with Short Memory</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-10-24 22:52:17" itemprop="dateCreated datePublished" datetime="2026-10-24T22:52:17+08:00">2026-10-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-10-24 23:39:28" itemprop="dateModified" datetime="2026-10-24T23:39:28+08:00">2026-10-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文阅读</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>284</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>1 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="背景">背景</h2>
+<p>CoT（Chain of Thought）的迭代生成过程天生受到其一次写入性质的限制；即，一旦写入，中间计算将永久占据上下文，而不管它们在后续推理步骤中的相关性。因此，对于复杂的推理问题，上下文长度最终将增长到压倒性的大小。为了解决这个问题，PENCIL配备了一条归约规则，可以选择性地消除推理痕迹，允许模型生成更长的想法，以更少的内存解决更大的问题。</p>
+<h2 id="解决方案">解决方案</h2>
+<figure>
+<img src="/images/papers/PENCIL/figure1.png" alt="Figure 1: A toy example illustrating how PENCIL would potentially solve an arithmetic problem."><figcaption aria-hidden="true">Figure 1: A toy example illustrating how PENCIL would potentially solve an arithmetic problem.</figcaption>
+</figure>
+<p>通过figure1也很好理解作者的意图，PENCIL擦除CoT中间推理过程的思路是引入[CALL]、[SEP]和[RETURN]。LLM输出[RETURN]标签时执行规约不断地擦除中间计算的推理过程，使得长期推理时保持一个相对较短的context。</p>
+<ul>
+<li><strong><code>[CALL]</code></strong>：标记一个推理片段的开始。</li>
+<li><strong><code>[SEP]</code></strong>：分隔中间推理 (T) 和结果 (A)。</li>
+<li><strong><code>[RETURN]</code></strong>：标记该片段计算完成；当序列匹配上述格式时，触发化简。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://neepu-kevin.github.io/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -354,7 +465,7 @@ mjx-container[display="true"] + br {
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/" class="post-title-link" itemprop="url">SKILL.state Scalable Long-Horizon Agent Skills</a>
+          <a href="/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/" class="post-title-link" itemprop="url">SKILL.state:Scalable Long-Horizon Agent Skills</a>
         </h2>
 
         <div class="post-meta-container">
@@ -372,7 +483,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-24 12:02:32" itemprop="dateModified" datetime="2026-10-24T12:02:32+08:00">2026-10-24</time>
+      <time title="Modified: 2026-10-24 23:13:10" itemprop="dateModified" datetime="2026-10-24T23:13:10+08:00">2026-10-24</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -572,7 +683,7 @@ mjx-container[display="true"] + br {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>Word count total: </span>
-    <span title="Word count total">1k</span>
+    <span title="Word count total">2k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">

@@ -1,7 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>SKILL.state Scalable Long-Horizon Agent Skills</title>
+    <title>PENCIL: Long Thoughts with Short Memory</title>
+    <url>/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/</url>
+    <content><![CDATA[<h2 id="背景">背景</h2>
+<p>CoT（Chain of Thought）的迭代生成过程天生受到其一次写入性质的限制；即，一旦写入，中间计算将永久占据上下文，而不管它们在后续推理步骤中的相关性。因此，对于复杂的推理问题，上下文长度最终将增长到压倒性的大小。为了解决这个问题，PENCIL配备了一条归约规则，可以选择性地消除推理痕迹，允许模型生成更长的想法，以更少的内存解决更大的问题。</p>
+<h2 id="解决方案">解决方案</h2>
+<figure>
+<img src="/images/papers/PENCIL/figure1.png" alt="Figure 1: A toy example illustrating how PENCIL would potentially solve an arithmetic problem."><figcaption aria-hidden="true">Figure 1: A toy example illustrating how PENCIL would potentially solve an arithmetic problem.</figcaption>
+</figure>
+<p>通过figure1也很好理解作者的意图，PENCIL擦除CoT中间推理过程的思路是引入[CALL]、[SEP]和[RETURN]。LLM输出[RETURN]标签时执行规约不断地擦除中间计算的推理过程，使得长期推理时保持一个相对较短的context。</p>
+<ul>
+<li><strong><code>[CALL]</code></strong>：标记一个推理片段的开始。</li>
+<li><strong><code>[SEP]</code></strong>：分隔中间推理 (T) 和结果 (A)。</li>
+<li><strong><code>[RETURN]</code></strong>：标记该片段计算完成；当序列匹配上述格式时，触发化简。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>论文阅读</category>
+      </categories>
+      <tags>
+        <tag>context</tag>
+        <tag>Reduction</tag>
+        <tag>Iterative-Generation</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SKILL.state:Scalable Long-Horizon Agent Skills</title>
     <url>/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/</url>
     <content><![CDATA[<h2 id="introduction">Introduction</h2>
 <blockquote>
@@ -132,8 +157,8 @@
         <category>论文阅读</category>
       </categories>
       <tags>
-        <tag>agent</tag>
         <tag>context</tag>
+        <tag>agent</tag>
         <tag>structured-state</tag>
       </tags>
   </entry>
