@@ -17,7 +17,9 @@
 <p><strong>核心思路：用当前执行状态代替历史执行过程。</strong></p>
 <h2 id="skill.state">SKILL.state</h2>
 <h3 id="runtime-architecture">Runtime Architecture</h3>
-<p><em>Figure 1. Traditional Skill Execution 与 SKILL.state 架构对比。</em></p>
+<figure>
+<img src="/images/papers/skill-state/figure1.png" alt="Figure 1. Traditional Skill Execution 与 SKILL.state 架构对比"><figcaption aria-hidden="true">Figure 1. Traditional Skill Execution 与 SKILL.state 架构对比</figcaption>
+</figure>
 <p>SKILL.state 将每一步的 Prompt 分为三个部分：</p>
 <p><span class="math display"><em>P</em><sub><em>t</em></sub> = (<em>P</em>, <em>Σ</em><sub><em>t</em></sub>, <em>O</em><sub><em>t</em></sub>)</span></p>
 <p>其中：</p>
@@ -32,7 +34,7 @@
 <p>运行时验证并更新状态，执行 Action，再获取下一轮 Observation。</p>
 <p>需要注意，<strong>SKILL.state 并没有舍弃 Reasoning 和 Action 的执行，而是舍弃后续步骤不再需要的中间推理历史。</strong></p>
 <figure>
-<img src="/images/papers/skill-state/algorithm1.png" alt="表1"><figcaption aria-hidden="true">表1</figcaption>
+<img src="/images/papers/skill-state/algorithm1.png" alt="Algorithm 1. SKILL.state Runtime"><figcaption aria-hidden="true">Algorithm 1. SKILL.state Runtime</figcaption>
 </figure>
 <h3 id="structured-execution-state">Structured Execution State</h3>
 <p>SKILL.state 通过预先定义的 Schema 来约束状态结构，记录任务执行所需的关键信息。</p>
@@ -88,7 +90,7 @@
 <td>SKILL.state 在保持较高准确率的同时，显著降低累计 Token 消耗。</td>
 </tr>
 <tr class="even">
-<td><strong>Context Corruption / Noise Robustness</strong></td>
+<td><strong>Context Corruption(Noise Robustness)</strong></td>
 <td>加入大量无关信息后，Agent 的执行表现是否稳定？</td>
 <td>结构化状态能够减少无关历史信息对后续决策的干扰。</td>
 </tr>
@@ -113,11 +115,21 @@
 <h2 id="conclusion">Conclusion</h2>
 <p>SKILL.state 的核心是将不断增长的历史对话转变为显式、可更新的执行状态。</p>
 <p>在状态大小有界的条件下，将累计 Prompt 规模从 <span class="math inline"><em>O</em>(<em>T</em><sup>2</sup>)</span> 降低至 <span class="math inline"><em>O</em>(<em>T</em>)</span>，同时在长任务执行、噪声干扰和状态恢复实验中表现出较好的准确率与效率。</p>
-<p>对我而言，这篇论文最值得记住的是：</p>
 <p><strong>Agent 不需要在每一步重新阅读所有执行历史，而是需要准确知道当前处于什么状态。</strong></p>
+<hr>
+<blockquote>
+<p><strong>论文信息</strong></p>
+<p><strong>论文标题：</strong> SKILL.state: Scalable Long-Horizon Agent Skills</p>
+<p><strong>论文首次公开日期：</strong> 2026-08-26</p>
+<p><strong>录用会议：</strong> EMNLP</p>
+<p><strong>论文链接：</strong> <a href="https://arxiv.org/abs/2608.26263">arXiv:2608.26263</a></p>
+<p><strong>论文 PDF：</strong> <a href="https://arxiv.org/pdf/2608.26263">阅读全文</a></p>
+<p><strong>DOI：</strong> <a href="https://doi.org/10.48550/arXiv.2608.26263">10.48550/arXiv.2608.26263</a></p>
+<p>本文为个人论文阅读笔记，方法描述与实验结果以原论文为准。</p>
+</blockquote>
 ]]></content>
       <categories>
-        <category>论文</category>
+        <category>论文阅读</category>
       </categories>
       <tags>
         <tag>agent</tag>
