@@ -19,16 +19,16 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"neepu-kevin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="长推理与短上下文 读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。 这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。 SKILL.state">
+    <meta name="description" content="长推理与短上下文 读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。 SKILL.state 在每轮执行后维护当前状态，PENCIL 则进一步把这种思路放进了自回归生成过程：一边生成推理，一边回收已经不再需要的推理片段。 CoT 的问题：写下来的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="PENCIL: Long Thoughts with Short Memory">
 <meta property="og:url" content="https://neepu-kevin.github.io/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="长推理与短上下文 读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。 这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。 SKILL.state">
+<meta property="og:description" content="长推理与短上下文 读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。 SKILL.state 在每轮执行后维护当前状态，PENCIL 则进一步把这种思路放进了自回归生成过程：一边生成推理，一边回收已经不再需要的推理片段。 CoT 的问题：写下来的">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://neepu-kevin.github.io/images/papers/PENCIL/figure1.png">
 <meta property="article:published_time" content="2026-10-24T14:52:17.000Z">
-<meta property="article:modified_time" content="2026-10-25T13:23:10.764Z">
+<meta property="article:modified_time" content="2026-10-25T13:43:03.213Z">
 <meta property="article:author" content="Kevin">
 <meta property="article:tag" content="context">
 <meta property="article:tag" content="Reduction">
@@ -382,7 +382,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-25 21:23:10" itemprop="dateModified" datetime="2026-10-25T21:23:10+08:00">2026-10-25</time>
+      <time title="Modified: 2026-10-25 21:43:03" itemprop="dateModified" datetime="2026-10-25T21:43:03+08:00">2026-10-25</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -408,7 +408,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">Word count in article: </span>
-      <span>3k</span>
+      <span>2.9k</span>
     </span>
     <span class="post-meta-item" title="Reading time">
       <span class="post-meta-item-icon">
@@ -427,13 +427,11 @@ mjx-container[display="true"] + br {
     
     <div class="post-body" itemprop="articleBody"><h2 id="长推理与短上下文">长推理与短上下文</h2>
 <p>读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。</p>
-<p>这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。</p>
 <p>SKILL.state 在每轮执行后维护当前状态，PENCIL 则进一步把这种思路放进了自回归生成过程：一边生成推理，一边回收已经不再需要的推理片段。</p>
-<span id="more"></span>
 <h2 id="cot-的问题写下来的过程会一直占据上下文">CoT 的问题：写下来的过程会一直占据上下文</h2>
 <p>标准 CoT（Chain of Thought，思维链）通过生成中间步骤来帮助模型求解问题。每一步生成的内容追加到当前上下文中，再作为后续生成的输入，直到得到最终答案。</p>
 <p>这让模型能够进行多步计算，但也将两件事绑定在了一起：做过多少计算，就留下多少计算记录。</p>
-<p>一个子问题已经求出结果后，后续可能只需要它的答案，推导答案的过程却仍然占据上下文。这样的子问题越多，历史计算累积得越长。即使尚未超过上下文窗口，后续每个 Token 的生成也仍然需要处理越来越长的序列。</p>
+<p>随着推理推进，已经完成的中间计算仍然留在 Prompt 中，与后续需要的条件和结论混在一起。模型继续推理时，需要从这些历史记录中辨认：哪些结论仍然有效，哪些问题尚未解决。上下文保存了完整的计算经过，却没有直接呈现当前的计算进展。 <span id="more"></span></p>
 <p>论文将这一限制称为 write-only 或 write-once。这里强调的是标准生成过程只能追加、缺少回收机制；上下文里的旧内容仍然可以被读取。</p>
 <p>这也是标题中 Long Thoughts 与 Short Memory 要表达的关系：<strong>总推理过程可以很长，但同一时刻需要保留的上下文可以短得多。</strong></p>
 <p>test-time 指模型推理、求解新问题的阶段。增加推理时间预算，允许模型生成更多中间步骤；如果这些步骤只能累积，内存就会随之增长。PENCIL 希望通过回收中间计算，让更长时间的推理不再要求等比例增长的上下文。</p>
