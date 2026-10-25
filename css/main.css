@@ -1258,7 +1258,7 @@ pre code {
     vertical-align: middle;
   }
   .links-of-author a::before {
-    background: #dfd1c4;
+    background: #7c3767;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -2923,6 +2923,11 @@ body::before {
 }
 .post-body blockquote > :last-child {
   margin-bottom: 0;
+}
+.post-body .math.display {
+  display: block;
+  text-align: center;
+  overflow-x: auto;
 }
 @media (max-width: 767px) {
   body::before {

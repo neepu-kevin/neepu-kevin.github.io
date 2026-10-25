@@ -290,7 +290,7 @@ mjx-container[display="true"] + br {
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -372,7 +372,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-25 10:50:02" itemprop="dateModified" datetime="2026-10-25T10:50:02+08:00">2026-10-25</time>
+      <time title="Modified: 2026-10-25 21:23:10" itemprop="dateModified" datetime="2026-10-25T21:23:10+08:00">2026-10-25</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -391,14 +391,14 @@ mjx-container[display="true"] + br {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">Word count in article: </span>
-      <span>285</span>
+      <span>3k</span>
     </span>
     <span class="post-meta-item" title="Reading time">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">Reading time &asymp;</span>
-      <span>1 mins.</span>
+      <span>10 mins.</span>
     </span>
 </div>
 
@@ -409,11 +409,13 @@ mjx-container[display="true"] + br {
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="背景">背景</h2>
-<p>CoT（Chain of Thought）的迭代生成过程天生受到其一次写入性质的限制；即，一旦写入，中间计算将永久占据上下文，而不管它们在后续推理步骤中的相关性。因此，对于复杂的推理问题，上下文长度最终将增长到压倒性的大小。为了解决这个问题，PENCIL配备了一条归约规则，可以选择性地消除推理痕迹，允许模型生成更长的想法，以更少的内存解决更大的问题。</p>
+          <h2 id="长推理与短上下文">长推理与短上下文</h2>
+<p>读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。</p>
+<p>这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。</p>
+<p>SKILL.state 在每轮执行后维护当前状态，PENCIL 则进一步把这种思路放进了自回归生成过程：一边生成推理，一边回收已经不再需要的推理片段。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/#more" rel="contents">
+              <a class="btn" href="/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -480,7 +482,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-25 10:57:35" itemprop="dateModified" datetime="2026-10-25T10:57:35+08:00">2026-10-25</time>
+      <time title="Modified: 2026-10-25 21:29:18" itemprop="dateModified" datetime="2026-10-25T21:29:18+08:00">2026-10-25</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -499,14 +501,14 @@ mjx-container[display="true"] + br {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">Word count in article: </span>
-      <span>1.4k</span>
+      <span>2.8k</span>
     </span>
     <span class="post-meta-item" title="Reading time">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">Reading time &asymp;</span>
-      <span>5 mins.</span>
+      <span>9 mins.</span>
     </span>
 </div>
 
@@ -517,16 +519,13 @@ mjx-container[display="true"] + br {
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="introduction">Introduction</h2>
-<blockquote>
-<p>As agents increasingly execute long-running procedures, execution itself becomes a systems problem rather than purely a reasoning problem.</p>
-</blockquote>
-<p>随着 Agent 执行的任务越来越长，任务执行本身逐渐成为一个系统问题，而不再只是一个推理问题。</p>
-<p>Agent 在完成任务时，一种简单而常规的方法是将 System Prompt、User Prompt、Tools 调用、Observation 和中间 Reasoning 过程完整加入上下文。随着执行步骤增加，历史记录不断增长，不仅造成 Token 消耗增加，也可能因为过时信息和无关内容导致 Context Poisoning。</p>
-<p>即使采用 Memory（Summarization）对历史进行压缩，本质上仍然依赖历史文本重构当前执行状态。</p>
+          <h2 id="从执行历史到当前状态">从执行历史到当前状态</h2>
+<p>在长任务中，Agent 需要持续接收工具结果，并根据这些结果决定下一步动作。一种直接的实现方式，是把用户请求、工具调用、观察结果和中间推理不断追加到上下文中。下一次调用模型时，再把此前的记录一起输入。</p>
+<p>这种方式能够保留执行经过，但也带来了一个问题：任务越长，模型需要重新阅读的历史就越多。其中有些信息仍然有效，有些已经被后续操作覆盖，还有一些只是当时推理过程中产生的临时判断。模型不仅需要决定下一步做什么，还需要从这些记录中重新确定当前状态。</p>
+<p>SKILL.state 关注的就是这部分执行机制：<strong>能否直接维护一份当前状态，让下一步决策不再依赖完整历史的重复输入？</strong></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/#more" rel="contents">
+              <a class="btn" href="/2026/10/23/SKILL.state%20Scalable%20Long-Horizon%20Agent%20Skills/" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -570,14 +569,14 @@ mjx-container[display="true"] + br {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>Word count total: </span>
-    <span title="Word count total">2k</span>
+    <span title="Word count total">6k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>Reading time total &asymp;</span>
-    <span title="Reading time total">5 mins.</span>
+    <span title="Reading time total">19 mins.</span>
   </span>
 </div>
 <div class="busuanzi-count">

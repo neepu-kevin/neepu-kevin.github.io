@@ -19,16 +19,16 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"neepu-kevin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="背景 CoT（Chain of Thought）的迭代生成过程天生受到其一次写入性质的限制；即，一旦写入，中间计算将永久占据上下文，而不管它们在后续推理步骤中的相关性。因此，对于复杂的推理问题，上下文长度最终将增长到压倒性的大小。为了解决这个问题，PENCIL配备了一条归约规则，可以选择性地消除推理痕迹，允许模型生成更长的想法，以更少的内存解决更大的问题。">
+    <meta name="description" content="长推理与短上下文 读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。 这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。 SKILL.state">
 <meta property="og:type" content="article">
 <meta property="og:title" content="PENCIL: Long Thoughts with Short Memory">
 <meta property="og:url" content="https://neepu-kevin.github.io/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="背景 CoT（Chain of Thought）的迭代生成过程天生受到其一次写入性质的限制；即，一旦写入，中间计算将永久占据上下文，而不管它们在后续推理步骤中的相关性。因此，对于复杂的推理问题，上下文长度最终将增长到压倒性的大小。为了解决这个问题，PENCIL配备了一条归约规则，可以选择性地消除推理痕迹，允许模型生成更长的想法，以更少的内存解决更大的问题。">
+<meta property="og:description" content="长推理与短上下文 读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。 这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。 SKILL.state">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://neepu-kevin.github.io/images/papers/PENCIL/figure1.png">
 <meta property="article:published_time" content="2026-10-24T14:52:17.000Z">
-<meta property="article:modified_time" content="2026-10-25T02:50:02.806Z">
+<meta property="article:modified_time" content="2026-10-25T13:23:10.764Z">
 <meta property="article:author" content="Kevin">
 <meta property="article:tag" content="context">
 <meta property="article:tag" content="Reduction">
@@ -273,7 +273,7 @@ mjx-container[display="true"] + br {
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">2.</span> <span class="nav-text">解决方案</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E6%8E%A8%E7%90%86%E4%B8%8E%E7%9F%AD%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">1.</span> <span class="nav-text">长推理与短上下文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cot-%E7%9A%84%E9%97%AE%E9%A2%98%E5%86%99%E4%B8%8B%E6%9D%A5%E7%9A%84%E8%BF%87%E7%A8%8B%E4%BC%9A%E4%B8%80%E7%9B%B4%E5%8D%A0%E6%8D%AE%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">CoT 的问题：写下来的过程会一直占据上下文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E5%BD%92%E7%BA%A6%E8%A7%84%E5%88%99%E5%9B%9E%E6%94%B6%E5%B7%B2%E7%BB%8F%E5%AE%8C%E6%88%90%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="nav-number">3.</span> <span class="nav-text">用归约规则回收已经完成的计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%92%E5%BD%92%E6%90%9C%E7%B4%A2%E4%B8%AD%E7%9A%84%E4%B8%AD%E9%97%B4%E8%AE%A1%E7%AE%97%E5%9B%9E%E6%94%B6"><span class="nav-number">4.</span> <span class="nav-text">递归搜索中的中间计算回收</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E9%9C%80%E8%A6%81%E5%AD%A6%E4%BC%9A%E5%9C%A8%E7%BC%A9%E7%9F%AD%E5%90%8E%E7%9A%84%E4%B8%8A%E4%B8%8B%E6%96%87%E4%B8%AD%E7%BB%A7%E7%BB%AD"><span class="nav-number">4.1.</span> <span class="nav-text">模型需要学会在缩短后的上下文中继续</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E9%99%90%E4%B8%8A%E4%B8%8B%E6%96%87%E4%B8%8B%E7%9A%84%E8%B0%9C%E9%A2%98%E6%B1%82%E8%A7%A3%E8%A1%A8%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">有限上下文下的谜题求解表现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E-skill.state%E9%95%BF%E7%9F%AD%E6%9C%9F%E8%AE%B0%E5%BF%86%E7%9A%84%E8%81%94%E7%B3%BB"><span class="nav-number">6.</span> <span class="nav-text">与 SKILL.state、长短期记忆的联系</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -299,7 +299,7 @@ mjx-container[display="true"] + br {
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -382,7 +382,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-25 10:50:02" itemprop="dateModified" datetime="2026-10-25T10:50:02+08:00">2026-10-25</time>
+      <time title="Modified: 2026-10-25 21:23:10" itemprop="dateModified" datetime="2026-10-25T21:23:10+08:00">2026-10-25</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -408,14 +408,14 @@ mjx-container[display="true"] + br {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">Word count in article: </span>
-      <span>285</span>
+      <span>3k</span>
     </span>
     <span class="post-meta-item" title="Reading time">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">Reading time &asymp;</span>
-      <span>1 mins.</span>
+      <span>10 mins.</span>
     </span>
 </div>
 
@@ -425,19 +425,131 @@ mjx-container[display="true"] + br {
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="背景">背景</h2>
-<p>CoT（Chain of Thought）的迭代生成过程天生受到其一次写入性质的限制；即，一旦写入，中间计算将永久占据上下文，而不管它们在后续推理步骤中的相关性。因此，对于复杂的推理问题，上下文长度最终将增长到压倒性的大小。为了解决这个问题，PENCIL配备了一条归约规则，可以选择性地消除推理痕迹，允许模型生成更长的想法，以更少的内存解决更大的问题。</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="长推理与短上下文">长推理与短上下文</h2>
+<p>读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。</p>
+<p>这也让我联想到长短期记忆的分工：当前计算使用临时信息，后续计算则依赖经过选择、保留下来的结果。在 PENCIL 中，这种分工体现在推理时的上下文管理上。</p>
+<p>SKILL.state 在每轮执行后维护当前状态，PENCIL 则进一步把这种思路放进了自回归生成过程：一边生成推理，一边回收已经不再需要的推理片段。</p>
 <span id="more"></span>
-<h2 id="解决方案">解决方案</h2>
-<figure>
-<img src="/images/papers/PENCIL/figure1.png" alt="Figure 1: A toy example illustrating how PENCIL would potentially solve an arithmetic problem."><figcaption aria-hidden="true">Figure 1: A toy example illustrating how PENCIL would potentially solve an arithmetic problem.</figcaption>
-</figure>
-<p>通过figure1也很好理解作者的意图，PENCIL擦除CoT中间推理过程的思路是引入[CALL]、[SEP]和[RETURN]。LLM输出[RETURN]标签时执行规约不断地擦除中间计算的推理过程，使得长期推理时保持一个相对较短的context。</p>
+<h2 id="cot-的问题写下来的过程会一直占据上下文">CoT 的问题：写下来的过程会一直占据上下文</h2>
+<p>标准 CoT（Chain of Thought，思维链）通过生成中间步骤来帮助模型求解问题。每一步生成的内容追加到当前上下文中，再作为后续生成的输入，直到得到最终答案。</p>
+<p>这让模型能够进行多步计算，但也将两件事绑定在了一起：做过多少计算，就留下多少计算记录。</p>
+<p>一个子问题已经求出结果后，后续可能只需要它的答案，推导答案的过程却仍然占据上下文。这样的子问题越多，历史计算累积得越长。即使尚未超过上下文窗口，后续每个 Token 的生成也仍然需要处理越来越长的序列。</p>
+<p>论文将这一限制称为 write-only 或 write-once。这里强调的是标准生成过程只能追加、缺少回收机制；上下文里的旧内容仍然可以被读取。</p>
+<p>这也是标题中 Long Thoughts 与 Short Memory 要表达的关系：<strong>总推理过程可以很长，但同一时刻需要保留的上下文可以短得多。</strong></p>
+<p>test-time 指模型推理、求解新问题的阶段。增加推理时间预算，允许模型生成更多中间步骤；如果这些步骤只能累积，内存就会随之增长。PENCIL 希望通过回收中间计算，让更长时间的推理不再要求等比例增长的上下文。</p>
+<h2 id="用归约规则回收已经完成的计算">用归约规则回收已经完成的计算</h2>
+<p>PENCIL 的全称是 PENCIL ENables Context-efficient Inference and Learning。它由一个可学习的下一 Token 生成器和一条归约规则组成。前者继续生成推理，后者在序列满足指定模式时缩短上下文。<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=2">论文 §1–2</a></p>
+<p>论文采用的规则来自函数调用栈的启发：子调用结束后，调用者通常只需要返回值，无须保留子调用的全部局部计算。</p>
+<p>对应到序列上，规则为：</p>
+<p><span class="math display"><em>C</em> <code>[CALL]</code> <em>T</em> <code>[SEP]</code> <em>A</em> <code>[RETURN]</code> ⇒ <em>C</em> <em>A</em></span></p>
+<p>其中，<span class="math inline"><em>C</em></span> 是此前的上下文，<span class="math inline"><em>T</em></span> 是本次计算的中间推理，<span class="math inline"><em>A</em></span> 是需要返回并保留的结果。三个特殊 Token 划定它们的边界：</p>
 <ul>
-<li><strong><code>[CALL]</code></strong>：标记一个推理片段的开始。</li>
-<li><strong><code>[SEP]</code></strong>：分隔中间推理 (T) 和结果 (A)。</li>
-<li><strong><code>[RETURN]</code></strong>：标记该片段计算完成；当序列匹配上述格式时，触发化简。</li>
+<li><code>[CALL]</code> 标记一个计算片段的开始。</li>
+<li><code>[SEP]</code> 分隔中间推理 <span class="math inline"><em>T</em></span> 与返回结果 <span class="math inline"><em>A</em></span>。</li>
+<li><code>[RETURN]</code> 标记返回；当整个序列匹配规则时，触发归约。</li>
 </ul>
+<p>归约会删除 <span class="math inline"><em>T</em></span> 及这一组边界标记，将 <span class="math inline"><em>A</em></span> 接回 <span class="math inline"><em>C</em></span>。后续生成看到的是归约后的上下文。<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=3">论文 §2.1，式 (1)</a></p>
+<p>因此，模型并没有省略求出 <span class="math inline"><em>A</em></span> 的计算。它先完成这段推理，再让结果承担跨步骤传递信息的作用。</p>
+<p>生成与归约交替进行：模型逐个生成 Token，当输出形成完整的返回结构时，运行程序执行归约，再以缩短后的上下文继续生成。</p>
+<p>论文图 1 用一个算术问题示意这一机制：玩具店准备了 3 个蓝袋，每袋 5 个玩具，以及 2 个红袋，每袋 4 个玩具，求玩具总数。右侧流程展示了各层计算返回时，上下文如何变化。</p>
+<figure>
+<img src="/images/papers/PENCIL/figure1.png" alt="Figure 1：PENCIL 通过交替生成与归约，保留子问题结果并移除中间推理"><figcaption aria-hidden="true">Figure 1：PENCIL 通过交替生成与归约，保留子问题结果并移除中间推理</figcaption>
+</figure>
+<p>蓝袋部分先算出 <span class="math inline">3 × 5 = 15</span>。返回之后，具体乘法推导被移除，上下文留下“蓝袋共有 15 个玩具”。接着，红袋部分算出 <span class="math inline">2 × 4 = 8</span>，同样只留下“红袋共有 8 个玩具”。</p>
+<p>此时，外层计算拥有两个子问题的结果，可以继续求出 <span class="math inline">15 + 8 = 23</span>。等外层也返回后，这一层中的两个小计及加法过程都可以被移除，最后保留“总共使用了 23 个玩具”。</p>
+<p>这就是递归应用归约规则的含义：内层调用先返回结果，外层利用结果继续计算，再在自身结束时返回。某个结果可以跨越内层调用保留，却在外层完成后失去继续保留的必要。</p>
+<p>图 1 展示了作者设想的自然语言推理形式，具体的 QBF 推理轨迹见论文图 2。<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=2">论文图 1 及图注</a></p>
+<h2 id="递归搜索中的中间计算回收">递归搜索中的中间计算回收</h2>
+<p>论文训练和评估的任务包括 SAT、QBF 和 Einstein’s puzzle（爱因斯坦谜题）。它们的共同特点是存在大量中间计算，适合观察“累计计算量”和“当前保留量”的差异。</p>
+<p>SAT 判断布尔公式是否存在满足赋值；QBF 在布尔公式上加入存在量词和全称量词。论文中的求解算法会选择一个尚未赋值的变量，尝试它为真或为假，再对剩余问题重复同样的求解过程。这种“在子问题中继续调用同一求解过程”的方式，就是递归搜索。</p>
+<p>每次变量取值对应一个搜索分支。沿当前分支继续赋值，直到能够判断结果，再把结果返回上一层。上层根据求解规则决定是否继续尝试另一种取值：例如，存在量词找到一个成立的分支即可，全称量词则要求两种取值都成立。</p>
+<p>对于已经返回的分支，上层需要的是该分支的结果，而不必一直保留其全部变量尝试和公式检查过程。PENCIL 用调用边界包住这些计算，返回后回收相应片段；尚未完成的外层计算仍然留在上下文中。<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=5">论文 §3.1、图 2</a></p>
+<p>在这种搜索里，累计走过的分支可能很多，而当前继续计算所需的内容，主要是尚未结束的调用及它们需要的结果。已经完成的分支可以不断被回收，从而用较短的上下文支持较长的搜索过程。</p>
+<p>这也解释了效率收益的来源。对于同一条带边界标记的推理轨迹，归约前后生成的总 Token 数可以相同，但执行归约后，每个新 Token 所面对的上下文更短。已经生成的计算仍然付出了成本，后续却无须持续携带它们。<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=5">论文 §2.2</a></p>
+<p>因此，搜索仍然可能需要大量步骤，但空间消耗不必跟着累计生成量一起增长。</p>
+<h3 id="模型需要学会在缩短后的上下文中继续">模型需要学会在缩短后的上下文中继续</h3>
+<p>归约按照特殊标记确定删除范围，因此，模型需要把后续计算所需的信息留在 <span class="math inline"><em>C</em></span> 或 <span class="math inline"><em>A</em></span> 中，并从归约后的序列继续生成。</p>
+<p>论文为此使用求解算法生成带特殊标记的推理轨迹，再按归约过程转换成多个较短的训练序列；每个序列只对本轮新生成的部分计算损失。这样，训练时就让模型接触到了“旧推理已经被擦除”的上下文。<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=7">论文 §4，Training</a></p>
+<p>训练让模型学会在返回结果中保留必要信息，运行时的归约则回收对应的中间过程，两者共同构成了 PENCIL 的生成方式。</p>
+<h2 id="有限上下文下的谜题求解表现">有限上下文下的谜题求解表现</h2>
+<p>与这条主线最相关的是：在相同上下文窗口下，回收中间过程能否让模型完成更复杂的问题。</p>
+<p>论文在爱因斯坦谜题上使用约 25M 参数的 Transformer，默认上下文窗口为 2048 Token。它为每种谜题规模生成 10,000 个训练实例，并在 100 个未见验证样本上，按能否正确回答“谁养鱼”计算准确率。表 2 的结果如下：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2503.14337v2#page=8">论文 §4、§4.2、表 2</a></p>
+<table>
+<thead>
+<tr class="header">
+<th>谜题规模</th>
+<th style="text-align: right;">CoT 准确率</th>
+<th style="text-align: right;">PENCIL 准确率</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">3 × 3</span></td>
+<td style="text-align: right;">99%</td>
+<td style="text-align: right;">99%</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">4 × 4</span></td>
+<td style="text-align: right;">34%</td>
+<td style="text-align: right;">100%</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">5 × 5</span></td>
+<td style="text-align: right;">25%</td>
+<td style="text-align: right;">97%</td>
+</tr>
+</tbody>
+</table>
+<p>小规模时，两种方式都能完成任务；规模增加后，保留全部中间轨迹的 CoT 表现明显下降，PENCIL 则仍能维持较高准确率。这支持了本文关心的判断：在论文的训练与评测设置中，当上下文窗口受限时，中间计算的管理方式会影响模型能够完成的推理规模。</p>
+<p>这一对照采用按任务训练的模型，CoT 也包含特殊标记，两种方法都在序列超出窗口时进行截断。因此，这组结果主要反映了该设置下，上下文管理方式对任务求解的影响。</p>
+<h2 id="与-skill.state长短期记忆的联系">与 SKILL.state、长短期记忆的联系</h2>
+<p>回到最初的联想，两篇论文都把中间推理看作需要执行、但可以在完成信息传递后回收的计算。它们选择的保留单位不同：</p>
+<table>
+<thead>
+<tr class="header">
+<th>比较点</th>
+<th>PENCIL</th>
+<th>SKILL.state</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>处理的过程</td>
+<td>自回归生成中的嵌套计算</td>
+<td>Agent 与环境交互的执行步骤</td>
+</tr>
+<tr class="even">
+<td>跨步骤保留什么</td>
+<td>原有上下文与返回结果</td>
+<td>固定流程、当前结构化状态与最新观察</td>
+</tr>
+<tr class="odd">
+<td>何时移除推理</td>
+<td>序列匹配返回归约规则时</td>
+<td>状态更新经过验证并应用后</td>
+</tr>
+<tr class="even">
+<td>依赖什么</td>
+<td>模型学会返回结构，程序执行归约</td>
+<td>领域状态 Schema、状态更新及运行时验证</td>
+</tr>
+</tbody>
+</table>
+<p>SKILL.state 把本轮推理转化成状态更新，后续依据更新后的状态继续执行；PENCIL 把子计算的推理转化成返回结果，外层依据结果继续计算。<a target="_blank" rel="noopener" href="https://arxiv.org/html/2608.26263v3#S3.SS1">SKILL.state §3.1–3.2</a></p>
+<p>因此，“长短期记忆”可以帮助理解这种分工：当前推理是临时工作内容，需要延续的信息被留下来。但保留多久取决于后续计算的需要，并不存在一份天然永久有效的答案或状态。图 1 中蓝袋的 15、红袋的 8，就只需要保留到外层完成求和。</p>
+<p>两篇工作都在长程推理中，将后续需要的信息保留为状态或结果，舍弃已经完成的中间计算，让模型依据简洁、明确的上下文继续推理。</p>
+<p>SKILL.state 用当前状态表达任务进展，PENCIL 用尚未结束的调用和已经返回的结果承接计算进度。两者都让推理产生的有效信息继续保留，同时回收得到这些信息的中间过程。模型仍然可以花很多步骤思考，而上下文保存的是继续计算所需的内容。</p>
+<p>这种回收依赖结果或状态能够承接后续需要的信息。完成了这次信息传递，中间推理就可以结束它在上下文中的生命周期。</p>
+<hr>
+<blockquote>
+<p><strong>论文信息</strong></p>
+<p><strong>论文标题：</strong> PENCIL: Long Thoughts with Short Memory</p>
+<p><strong>论文首次公开日期：</strong> 2025-03-18</p>
+<p><strong>阅读版本：</strong> arXiv v2，2025-07-06</p>
+<p><strong>发表 / 录用信息：</strong> ICML 2025</p>
+<p><strong>论文链接：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2503.14337">arXiv:2503.14337</a></p>
+<p>本文为个人论文阅读笔记，方法描述与实验结果以原论文为准。</p>
+</blockquote>
 
     </div>
 
@@ -492,14 +604,14 @@ mjx-container[display="true"] + br {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>Word count total: </span>
-    <span title="Word count total">2k</span>
+    <span title="Word count total">6k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>Reading time total &asymp;</span>
-    <span title="Reading time total">5 mins.</span>
+    <span title="Reading time total">19 mins.</span>
   </span>
 </div>
 <div class="busuanzi-count">
