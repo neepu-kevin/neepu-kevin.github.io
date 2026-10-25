@@ -372,7 +372,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-25 21:43:03" itemprop="dateModified" datetime="2026-10-25T21:43:03+08:00">2026-10-25</time>
+      <time title="Modified: 2026-10-25 21:45:20" itemprop="dateModified" datetime="2026-10-25T21:45:20+08:00">2026-10-25</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -415,7 +415,7 @@ mjx-container[display="true"] + br {
 <h2 id="cot-的问题写下来的过程会一直占据上下文">CoT 的问题：写下来的过程会一直占据上下文</h2>
 <p>标准 CoT（Chain of Thought，思维链）通过生成中间步骤来帮助模型求解问题。每一步生成的内容追加到当前上下文中，再作为后续生成的输入，直到得到最终答案。</p>
 <p>这让模型能够进行多步计算，但也将两件事绑定在了一起：做过多少计算，就留下多少计算记录。</p>
-<p>随着推理推进，已经完成的中间计算仍然留在 Prompt 中，与后续需要的条件和结论混在一起。模型继续推理时，需要从这些历史记录中辨认：哪些结论仍然有效，哪些问题尚未解决。上下文保存了完整的计算经过，却没有直接呈现当前的计算进展。
+<p>随着推理推进，已经完成的中间计算仍然留在上下文中，与后续需要的条件和结论混在一起。模型继续推理时，需要从这些历史记录中辨认：哪些结论仍然有效，哪些问题尚未解决。上下文保存了完整的计算经过，却没有直接呈现当前的计算进展。
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2026/10/24/PENCIL%20Long%20Thoughts%20with%20Short%20Memory/" rel="contents">
