@@ -372,7 +372,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-10-25 21:45:20" itemprop="dateModified" datetime="2026-10-25T21:45:20+08:00">2026-10-25</time>
+      <time title="Modified: 2026-10-26 13:21:40" itemprop="dateModified" datetime="2026-10-26T13:21:40+08:00">2026-10-26</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -391,7 +391,7 @@ mjx-container[display="true"] + br {
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">Word count in article: </span>
-      <span>2.9k</span>
+      <span>3k</span>
     </span>
     <span class="post-meta-item" title="Reading time">
       <span class="post-meta-item-icon">
@@ -413,6 +413,9 @@ mjx-container[display="true"] + br {
 <p>读完 SKILL.state，再看 PENCIL，我觉得两者有异曲同工之妙：模型需要完成中间推理，但这些推理未必需要一直保留。只要把后续真正依赖的信息留下来，已经完成使命的过程就可以从上下文中移除。</p>
 <p>SKILL.state 在每轮执行后维护当前状态，PENCIL 则进一步把这种思路放进了自回归生成过程：一边生成推理，一边回收已经不再需要的推理片段。</p>
 <h2 id="cot-的问题写下来的过程会一直占据上下文">CoT 的问题：写下来的过程会一直占据上下文</h2>
+<blockquote>
+<p>Reasoning models have no built-in mechanism to organize their chain-of-thought. Every past token sits in the attention window at equal cost, and the model has learned no way to drop it.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</blockquote>
 <p>标准 CoT（Chain of Thought，思维链）通过生成中间步骤来帮助模型求解问题。每一步生成的内容追加到当前上下文中，再作为后续生成的输入，直到得到最终答案。</p>
 <p>这让模型能够进行多步计算，但也将两件事绑定在了一起：做过多少计算，就留下多少计算记录。</p>
 <p>随着推理推进，已经完成的中间计算仍然留在上下文中，与后续需要的条件和结论混在一起。模型继续推理时，需要从这些历史记录中辨认：哪些结论仍然有效，哪些问题尚未解决。上下文保存了完整的计算经过，却没有直接呈现当前的计算进展。
