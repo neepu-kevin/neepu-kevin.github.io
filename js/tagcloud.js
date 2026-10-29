@@ -1,7 +1,7 @@
 (function () {
 function start() {
     if (!document.getElementById('resCanvas')) {
-        var tags = [{"name":"context","url":"/tags/context/"},{"name":"structured-state","url":"/tags/structured-state/"},{"name":"Reduction","url":"/tags/Reduction/"},{"name":"Iterative-Generation","url":"/tags/Iterative-Generation/"},{"name":"deeplearn","url":"/tags/deeplearn/"},{"name":"backpropagation","url":"/tags/backpropagation/"},{"name":"pytorch","url":"/tags/pytorch/"}];
+        var tags = [{"name":"context","url":"/tags/context/"},{"name":"Reduction","url":"/tags/Reduction/"},{"name":"Iterative-Generation","url":"/tags/Iterative-Generation/"},{"name":"deeplearn","url":"/tags/deeplearn/"},{"name":"backpropagation","url":"/tags/backpropagation/"},{"name":"pytorch","url":"/tags/pytorch/"},{"name":"structured-state","url":"/tags/structured-state/"}];
         var selectors = [".sidebar-tag-cloud-host"];
         var mount = null;
         for (var i = 0; i < selectors.length && !mount; i++) {
