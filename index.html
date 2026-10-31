@@ -279,7 +279,7 @@ mjx-container[display="true"] + br {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -327,6 +327,118 @@ mjx-container[display="true"] + br {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Kevin">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" class="post-title-link" itemprop="url">Simple神经网络</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-10-31 21:27:46" itemprop="dateCreated datePublished" datetime="2026-10-31T21:27:46+08:00">2026-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-10-31 21:49:43" itemprop="dateModified" datetime="2026-10-31T21:49:43+08:00">2026-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/deeplearning/" itemprop="url" rel="index"><span itemprop="name">deeplearning</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>378</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>1 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="神经网络训练与预测的基本思路">神经网络训练与预测的基本思路</h2>
+<p>首先进行数据预处理，使用 <code>pandas</code> 读取数据，提取特征 <code>X</code> 和标签 <code>y</code>，通过 <code>train_test_split()</code> 划分训练集与测试集，利用 <code>StandardScaler</code> 对特征进行标准化，再转换为 Tensor 并封装成 <code>TensorDataset</code>；其次，继承 <code>nn.Module</code> 搭建神经网络，在 <code>forward()</code> 中定义线性层、ReLU 激活函数等前向传播逻辑；接着进入模型训练阶段，通过 <code>DataLoader</code> 按 Batch（如16条数据）加载训练数据，调用 <code>model.train()</code> 开启训练模式，使用 <code>CrossEntropyLoss</code> 计算每个 Batch 的平均损失，依次执行 <code>optimizer.zero_grad()</code> 清空梯度、<code>loss.backward()</code> 反向传播计算梯度、<code>optimizer.step()</code> 更新模型参数，重复多个 Epoch，最后通过 <code>torch.save()</code> 保存模型权重；最后进入预测与评估阶段，重新创建相同结构的模型，通过 <code>load_state_dict()</code> 加载训练好的权重，调用 <code>model.eval()</code> 切换到评估模式，并在 <code>torch.no_grad()</code> 下执行前向传播，得到各类别的预测分数（Logits），使用 <code>torch.argmax(dim=1)</code> 选取分数最高的类别作为预测结果，再与真实标签比较，计算模型准确率（Accuracy）。对于新的预测数据，需要使用训练阶段保存的标准化参数进行相同的预处理。</p>
+<p>核心流程： 数据预处理 → 构建模型 → 前向传播 → 计算 Loss → 梯度清零 → 反向传播 → 更新权重 → 保存模型 → 加载权重 → 前向预测 → 评估结果。</p>
+<figure>
+<img src="images/papers/Simple神经网络/figure1.png" alt="figure1"><figcaption aria-hidden="true">figure1</figcaption>
+</figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -692,7 +804,7 @@ mjx-container[display="true"] + br {
       <i class="fa fa-coffee"></i>
     </span>
       <span>Reading time total &asymp;</span>
-    <span title="Reading time total">22 mins.</span>
+    <span title="Reading time total">24 mins.</span>
   </span>
 </div>
 <div class="busuanzi-count">

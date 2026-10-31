@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"neepu-kevin.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="神经网络训练与预测的基本思路 首先进行数据预处理，使用 pandas 读取数据，提取特征 X 和标签 y，通过 train_test_split() 划分训练集与测试集，利用 StandardScaler 对特征进行标准化，再转换为 Tensor 并封装成 TensorDataset；其次，继承 nn.Module 搭建神经网络，在 forward() 中定义线性层、ReLU 激活函数等前向传播">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Simple神经网络">
+<meta property="og:url" content="https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/index.html">
+<meta property="og:site_name" content="Blog">
+<meta property="og:description" content="神经网络训练与预测的基本思路 首先进行数据预处理，使用 pandas 读取数据，提取特征 X 和标签 y，通过 train_test_split() 划分训练集与测试集，利用 StandardScaler 对特征进行标准化，再转换为 Tensor 并封装成 TensorDataset；其次，继承 nn.Module 搭建神经网络，在 forward() 中定义线性层、ReLU 激活函数等前向传播">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/images/papers/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/figure1.png">
+<meta property="article:published_time" content="2026-10-31T13:27:46.000Z">
+<meta property="article:modified_time" content="2026-10-31T13:49:43.506Z">
+<meta property="article:author" content="Kevin">
+<meta property="article:tag" content="deeplearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/images/papers/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/figure1.png">
+
+
+<link rel="canonical" href="https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/","path":"2026/10/31/Simple神经网络/","title":"Simple神经网络"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Simple神经网络 | Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="Searching..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%AE%AD%E7%BB%83%E4%B8%8E%E9%A2%84%E6%B5%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%80%9D%E8%B7%AF"><span class="nav-number">1.</span> <span class="nav-text">神经网络训练与预测的基本思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">古法编程</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Kevin"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Kevin</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/neepu-kevin" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;neepu-kevin" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:neepu_kevin@163.com" title="E-Mail → mailto:neepu_kevin@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+<div class="sidebar-tag-cloud">
+  <h2 class="sidebar-tag-cloud-title">Tag Cloud</h2>
+
+  <div class="sidebar-tag-cloud-host"></div>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://neepu-kevin.github.io/2026/10/31/Simple%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Kevin">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Simple神经网络 | Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Simple神经网络
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-10-31 21:27:46" itemprop="dateCreated datePublished" datetime="2026-10-31T21:27:46+08:00">2026-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-10-31 21:49:43" itemprop="dateModified" datetime="2026-10-31T21:49:43+08:00">2026-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/deeplearning/" itemprop="url" rel="index"><span itemprop="name">deeplearning</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>378</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>1 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="神经网络训练与预测的基本思路">神经网络训练与预测的基本思路</h2>
+<p>首先进行数据预处理，使用 <code>pandas</code> 读取数据，提取特征 <code>X</code> 和标签 <code>y</code>，通过 <code>train_test_split()</code> 划分训练集与测试集，利用 <code>StandardScaler</code> 对特征进行标准化，再转换为 Tensor 并封装成 <code>TensorDataset</code>；其次，继承 <code>nn.Module</code> 搭建神经网络，在 <code>forward()</code> 中定义线性层、ReLU 激活函数等前向传播逻辑；接着进入模型训练阶段，通过 <code>DataLoader</code> 按 Batch（如16条数据）加载训练数据，调用 <code>model.train()</code> 开启训练模式，使用 <code>CrossEntropyLoss</code> 计算每个 Batch 的平均损失，依次执行 <code>optimizer.zero_grad()</code> 清空梯度、<code>loss.backward()</code> 反向传播计算梯度、<code>optimizer.step()</code> 更新模型参数，重复多个 Epoch，最后通过 <code>torch.save()</code> 保存模型权重；最后进入预测与评估阶段，重新创建相同结构的模型，通过 <code>load_state_dict()</code> 加载训练好的权重，调用 <code>model.eval()</code> 切换到评估模式，并在 <code>torch.no_grad()</code> 下执行前向传播，得到各类别的预测分数（Logits），使用 <code>torch.argmax(dim=1)</code> 选取分数最高的类别作为预测结果，再与真实标签比较，计算模型准确率（Accuracy）。对于新的预测数据，需要使用训练阶段保存的标准化参数进行相同的预处理。</p>
+<p>核心流程： 数据预处理 → 构建模型 → 前向传播 → 计算 Loss → 梯度清零 → 反向传播 → 更新权重 → 保存模型 → 加载权重 → 前向预测 → 评估结果。</p>
+<figure>
+<img src="images/papers/Simple神经网络/figure1.png" alt="figure1"><figcaption aria-hidden="true">figure1</figcaption>
+</figure>
+<span id="more"></span>
+<h2 id="古法编程">古法编程</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br><span class="line">551</span><br><span class="line">552</span><br><span class="line">553</span><br><span class="line">554</span><br><span class="line">555</span><br><span class="line">556</span><br><span class="line">557</span><br><span class="line">558</span><br><span class="line">559</span><br><span class="line">560</span><br><span class="line">561</span><br><span class="line">562</span><br><span class="line">563</span><br><span class="line">564</span><br><span class="line">565</span><br><span class="line">566</span><br><span class="line">567</span><br><span class="line">568</span><br><span class="line">569</span><br><span class="line">570</span><br><span class="line">571</span><br><span class="line">572</span><br><span class="line">573</span><br><span class="line">574</span><br><span class="line">575</span><br><span class="line">576</span><br><span class="line">577</span><br><span class="line">578</span><br><span class="line">579</span><br><span class="line">580</span><br><span class="line">581</span><br><span class="line">582</span><br><span class="line">583</span><br><span class="line">584</span><br><span class="line">585</span><br><span class="line">586</span><br><span class="line">587</span><br><span class="line">588</span><br><span class="line">589</span><br><span class="line">590</span><br><span class="line">591</span><br><span class="line">592</span><br><span class="line">593</span><br><span class="line">594</span><br><span class="line">595</span><br><span class="line">596</span><br><span class="line">597</span><br><span class="line">598</span><br><span class="line">599</span><br><span class="line">600</span><br><span class="line">601</span><br><span class="line">602</span><br><span class="line">603</span><br><span class="line">604</span><br><span class="line">605</span><br><span class="line">606</span><br><span class="line">607</span><br><span class="line">608</span><br><span class="line">609</span><br></pre></td><td class="code"><pre><span class="line">import time  </span><br><span class="line">import torch.nn as nn  </span><br><span class="line">import torch  </span><br><span class="line">import pandas as pd  </span><br><span class="line">import numpy as np  </span><br><span class="line">from sklearn.model_selection import train_test_split  </span><br><span class="line">from sklearn.preprocessing import StandardScaler  </span><br><span class="line">from torch.utils.data import TensorDataset, DataLoader  </span><br><span class="line">  </span><br><span class="line">"""  </span><br><span class="line">1.优化器 sgd-&gt;adam 权重更新方式  </span><br><span class="line">2.增加epochs 3.学习率  </span><br><span class="line">4.网络的结构（深度）  </span><br><span class="line">5.批量归一化（标准化）  </span><br><span class="line">""" </span><br><span class="line"></span><br><span class="line">"""  </span><br><span class="line">观察一：  </span><br><span class="line">    为什么每次运行结果不一致，我已经把训练集和测试集划分的随机种子改为了固定值，训练和测试的shuffle=False，调整为了False？  </span><br><span class="line">    answer：model的w矩阵和bias会随机初始化  </span><br><span class="line">    solvation:torch.manual_seed(23)</span><br><span class="line">"""</span><br><span class="line">     </span><br><span class="line">def create_dataset():  </span><br><span class="line">    """  </span><br><span class="line">    1.数据导入 pd.read_csv    2.数据提起 .iloc    3.修改数据类型 astype    4.差分为训练集和测试集 train_test_split    4.封装成TensorDataSet 注意：以y为划分  </span><br><span class="line">   """    data = pd.read_csv("../dataset/dataset.csv")  </span><br><span class="line">  </span><br><span class="line">    x, y = data.iloc[:, :-1], data.iloc[:, -1]  </span><br><span class="line">  </span><br><span class="line">    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 23, stratify = y)  </span><br><span class="line">    # 标准化  </span><br><span class="line">    transfer = StandardScaler()  </span><br><span class="line">    x_train = transfer.fit_transform(x_train)  </span><br><span class="line">    x_test = transfer.transform(x_test)  </span><br><span class="line">  </span><br><span class="line">    train_dataset = TensorDataset(torch.tensor(x_train, dtype=torch.float32), torch.tensor(y_train.to_numpy(), dtype=torch.long))  </span><br><span class="line">    test_dataset = TensorDataset(torch.tensor(x_test, dtype=torch.float32), torch.tensor(y_test.to_numpy(), dtype=torch.long))  </span><br><span class="line">  </span><br><span class="line">    return train_dataset, test_dataset, x_train.shape[1], len(np.unique(y))  </span><br><span class="line">  </span><br><span class="line">class MyModule(nn.Module):  </span><br><span class="line">    def __init__(self, in_channels, out_channels):  </span><br><span class="line">        super().__init__()  </span><br><span class="line">  </span><br><span class="line">        self.linear1 = nn.Linear(in_channels, 128)  </span><br><span class="line">        self.linear2 = nn.Linear(128, 256)  </span><br><span class="line">        self.linear3 = nn.Linear(256, 512)  </span><br><span class="line">        self.out = nn.Linear(512, out_channels)  </span><br><span class="line">        # 随机dropout 随机丢弃神经元的概率是20%（而不是w），其他值设置为(1/(1-p) evalute时候不生效，前向传播  </span><br><span class="line">        self.dropout = nn.Dropout(0.2)  </span><br><span class="line">        #xavier初始化  </span><br><span class="line">        #nn.init.xavier_uniform_(self.linear1.weight)  </span><br><span class="line">        #kaiming初始化  </span><br><span class="line">        # nn.init.kaiming_normal_(self.linear1.weight)  </span><br><span class="line">  </span><br><span class="line">    def forward(self, x):  </span><br><span class="line">        x = torch.relu(self.linear1(x))  </span><br><span class="line">        # x = self.dropout(x)  </span><br><span class="line">        x = torch.relu(self.linear2(x))  </span><br><span class="line">        # x = self.dropout(x)  </span><br><span class="line">        x = torch.relu(self.linear3(x))  </span><br><span class="line">        # x = self.dropout(x)  </span><br><span class="line">        x = self.out(x)  </span><br><span class="line">  </span><br><span class="line">        return x  </span><br><span class="line">#Accuracy: 0.912500023841857  </span><br><span class="line">def train(train_dataset, in_channels, out_channels):  </span><br><span class="line">    torch.manual_seed(23)  # 固定 PyTorch 随机种子  </span><br><span class="line">    # 16条数据为一组更新w矩阵，梯度和loss均取平均值  </span><br><span class="line">    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=False)  </span><br><span class="line">  </span><br><span class="line">    model = MyModule(in_channels, out_channels)  </span><br><span class="line">    #在上轮基础上继续训练  </span><br><span class="line">    #model.load_state_dict(torch.load("./model/phone_new.pth"))  </span><br><span class="line">    model.train()  </span><br><span class="line">    criterion = nn.CrossEntropyLoss()  </span><br><span class="line">    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)  </span><br><span class="line">  </span><br><span class="line">    epochs = 100  </span><br><span class="line">    for epoch in range(epochs):  </span><br><span class="line">        total_loss, batch_num = 0.0, 0  </span><br><span class="line">        start = time.time()  </span><br><span class="line">        for x, y in train_loader:  </span><br><span class="line">            y_pred = model(x)  </span><br><span class="line">            loss = criterion(y_pred, y)  </span><br><span class="line">            optimizer.zero_grad()  </span><br><span class="line">            loss.backward()  </span><br><span class="line">            optimizer.step()  </span><br><span class="line">            total_loss += loss.item()  </span><br><span class="line">            batch_num += 1  </span><br><span class="line">  </span><br><span class="line">        print("epoch: {}, loss: {}".format(epoch, total_loss / batch_num))  </span><br><span class="line">  </span><br><span class="line">        torch.save(model.state_dict(), "./model/phone_new.pth")  </span><br><span class="line">  </span><br><span class="line">def evaluate(test_dataset, in_channels, out_channels):  </span><br><span class="line">    model = MyModule(in_channels, out_channels)  </span><br><span class="line">    model.load_state_dict(torch.load("./model/phone_new.pth"))  </span><br><span class="line">    test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)  </span><br><span class="line">  </span><br><span class="line">    correct = 0  </span><br><span class="line">  </span><br><span class="line">    model.eval()  </span><br><span class="line">    for x, y in test_loader:  </span><br><span class="line">        y_pred = model(x)  </span><br><span class="line">        y_pred = torch.argmax(y_pred, dim=1) #取改行最大的列下表  </span><br><span class="line">        correct += (y_pred == y).sum()  </span><br><span class="line">  </span><br><span class="line">    print(f"测试集长度{len(test_dataset)}")  </span><br><span class="line">    print("Accuracy: {}".format(correct / len(test_dataset)))  </span><br><span class="line">  </span><br><span class="line">if __name__ == "__main__":  </span><br><span class="line">    train_dataset, test_dataset, in_channels, out_channels = create_dataset()  </span><br><span class="line">    train(train_dataset, in_channels, out_channels)  </span><br><span class="line">    evaluate(test_dataset, in_channels, out_channels)  </span><br><span class="line">  </span><br><span class="line">"""  </span><br><span class="line">1.单独修改优化器SGD -&gt; Adam 测试结果0.6299-&gt;0.6899  </span><br><span class="line">"""  </span><br><span class="line">"""  </span><br><span class="line">epoch: 0, loss: 12.275356920957565  </span><br><span class="line">epoch: 1, loss: 5.664751718044281  </span><br><span class="line">epoch: 2, loss: 4.367613979578018  </span><br><span class="line">epoch: 3, loss: 3.346119520068169  </span><br><span class="line">epoch: 4, loss: 2.9628239911794663  </span><br><span class="line">epoch: 5, loss: 2.4730107486248016  </span><br><span class="line">epoch: 6, loss: 2.743014596402645  </span><br><span class="line">epoch: 7, loss: 1.9424294182658195  </span><br><span class="line">epoch: 8, loss: 1.4416179582476616  </span><br><span class="line">epoch: 9, loss: 1.2556098023056983  </span><br><span class="line">epoch: 10, loss: 1.2087873123586177  </span><br><span class="line">epoch: 11, loss: 1.1886870449781417  </span><br><span class="line">epoch: 12, loss: 0.990172827243805  </span><br><span class="line">epoch: 13, loss: 0.9603729186952115  </span><br><span class="line">epoch: 14, loss: 0.9448116433620453  </span><br><span class="line">epoch: 15, loss: 0.8775042346119881  </span><br><span class="line">epoch: 16, loss: 0.8438116972148418  </span><br><span class="line">epoch: 17, loss: 0.8480545492470264  </span><br><span class="line">epoch: 18, loss: 0.8137524101138115  </span><br><span class="line">epoch: 19, loss: 0.7828893128037453  </span><br><span class="line">epoch: 20, loss: 0.7727564941346645  </span><br><span class="line">epoch: 21, loss: 0.7476465970277786  </span><br><span class="line">epoch: 22, loss: 0.736179753690958  </span><br><span class="line">epoch: 23, loss: 0.7463171377778053  </span><br><span class="line">epoch: 24, loss: 0.7501715512573719  </span><br><span class="line">epoch: 25, loss: 0.7229956957697868  </span><br><span class="line">epoch: 26, loss: 0.7715305870771408  </span><br><span class="line">epoch: 27, loss: 0.6947265450656414  </span><br><span class="line">epoch: 28, loss: 0.6555750331282616  </span><br><span class="line">epoch: 29, loss: 0.6411097963154316  </span><br><span class="line">epoch: 30, loss: 0.6343145401775837  </span><br><span class="line">epoch: 31, loss: 0.6297862699627876  </span><br><span class="line">epoch: 32, loss: 0.6223523770272732  </span><br><span class="line">epoch: 33, loss: 0.6282131713628769  </span><br><span class="line">epoch: 34, loss: 0.6063110309839249  </span><br><span class="line">epoch: 35, loss: 0.5836030329763889  </span><br><span class="line">epoch: 36, loss: 0.5789330069720745  </span><br><span class="line">epoch: 37, loss: 0.5752281700074673  </span><br><span class="line">epoch: 38, loss: 0.573796312212944  </span><br><span class="line">epoch: 39, loss: 0.5665600456297397  </span><br><span class="line">epoch: 40, loss: 0.5615177911520004  </span><br><span class="line">epoch: 41, loss: 0.5543169590830803  </span><br><span class="line">epoch: 42, loss: 0.5516153632104397  </span><br><span class="line">epoch: 43, loss: 0.5521966622769833  </span><br><span class="line">epoch: 44, loss: 0.550311424434185  </span><br><span class="line">epoch: 45, loss: 0.5495857125520707  </span><br><span class="line">epoch: 46, loss: 0.5450186708569527  </span><br><span class="line">epoch: 47, loss: 0.5371986550092697  </span><br><span class="line">epoch: 48, loss: 0.5375165629386902  </span><br><span class="line">epoch: 49, loss: 0.5317926251888275  </span><br><span class="line">测试集长度400  </span><br><span class="line">Accuracy: 0.6899999976158142  </span><br><span class="line">"""  </span><br><span class="line">  </span><br><span class="line">"""  </span><br><span class="line">2.Adam 基础上epoch 50-&gt;100轮 测试结果0.6899-&gt;0.6949:  </span><br><span class="line">"""  </span><br><span class="line">"""  </span><br><span class="line">epoch: 0, loss: 12.275356920957565  </span><br><span class="line">epoch: 1, loss: 5.664751718044281  </span><br><span class="line">epoch: 2, loss: 4.367613979578018  </span><br><span class="line">epoch: 3, loss: 3.346119520068169  </span><br><span class="line">epoch: 4, loss: 2.9628239911794663  </span><br><span class="line">epoch: 5, loss: 2.4730107486248016  </span><br><span class="line">epoch: 6, loss: 2.743014596402645  </span><br><span class="line">epoch: 7, loss: 1.9424294182658195  </span><br><span class="line">epoch: 8, loss: 1.4416179582476616  </span><br><span class="line">epoch: 9, loss: 1.2556098023056983  </span><br><span class="line">epoch: 10, loss: 1.2087873123586177  </span><br><span class="line">epoch: 11, loss: 1.1886870449781417  </span><br><span class="line">epoch: 12, loss: 0.990172827243805  </span><br><span class="line">epoch: 13, loss: 0.9603729186952115  </span><br><span class="line">epoch: 14, loss: 0.9448116433620453  </span><br><span class="line">epoch: 15, loss: 0.8775042346119881  </span><br><span class="line">epoch: 16, loss: 0.8438116972148418  </span><br><span class="line">epoch: 17, loss: 0.8480545492470264  </span><br><span class="line">epoch: 18, loss: 0.8137524101138115  </span><br><span class="line">epoch: 19, loss: 0.7828893128037453  </span><br><span class="line">epoch: 20, loss: 0.7727564941346645  </span><br><span class="line">epoch: 21, loss: 0.7476465970277786  </span><br><span class="line">epoch: 22, loss: 0.736179753690958  </span><br><span class="line">epoch: 23, loss: 0.7463171377778053  </span><br><span class="line">epoch: 24, loss: 0.7501715512573719  </span><br><span class="line">epoch: 25, loss: 0.7229956957697868  </span><br><span class="line">epoch: 26, loss: 0.7715305870771408  </span><br><span class="line">epoch: 27, loss: 0.6947265450656414  </span><br><span class="line">epoch: 28, loss: 0.6555750331282616  </span><br><span class="line">epoch: 29, loss: 0.6411097963154316  </span><br><span class="line">epoch: 30, loss: 0.6343145401775837  </span><br><span class="line">epoch: 31, loss: 0.6297862699627876  </span><br><span class="line">epoch: 32, loss: 0.6223523770272732  </span><br><span class="line">epoch: 33, loss: 0.6282131713628769  </span><br><span class="line">epoch: 34, loss: 0.6063110309839249  </span><br><span class="line">epoch: 35, loss: 0.5836030329763889  </span><br><span class="line">epoch: 36, loss: 0.5789330069720745  </span><br><span class="line">epoch: 37, loss: 0.5752281700074673  </span><br><span class="line">epoch: 38, loss: 0.573796312212944  </span><br><span class="line">epoch: 39, loss: 0.5665600456297397  </span><br><span class="line">epoch: 40, loss: 0.5615177911520004  </span><br><span class="line">epoch: 41, loss: 0.5543169590830803  </span><br><span class="line">epoch: 42, loss: 0.5516153632104397  </span><br><span class="line">epoch: 43, loss: 0.5521966622769833  </span><br><span class="line">epoch: 44, loss: 0.550311424434185  </span><br><span class="line">epoch: 45, loss: 0.5495857125520707  </span><br><span class="line">epoch: 46, loss: 0.5450186708569527  </span><br><span class="line">epoch: 47, loss: 0.5371986550092697  </span><br><span class="line">epoch: 48, loss: 0.5375165629386902  </span><br><span class="line">epoch: 49, loss: 0.5317926251888275  </span><br><span class="line">epoch: 50, loss: 0.5302800151705742  </span><br><span class="line">epoch: 51, loss: 0.5245097270607948  </span><br><span class="line">epoch: 52, loss: 0.5381828217208385  </span><br><span class="line">epoch: 53, loss: 0.542547320574522  </span><br><span class="line">epoch: 54, loss: 0.5171094079315662  </span><br><span class="line">epoch: 55, loss: 0.5132967816293239  </span><br><span class="line">epoch: 56, loss: 0.5194707836210728  </span><br><span class="line">epoch: 57, loss: 0.5289841735363007  </span><br><span class="line">epoch: 58, loss: 0.5084963363409042  </span><br><span class="line">epoch: 59, loss: 0.5094320105016231  </span><br><span class="line">epoch: 60, loss: 0.5283469311892987  </span><br><span class="line">epoch: 61, loss: 0.5071018266677857  </span><br><span class="line">epoch: 62, loss: 0.5096936863660813  </span><br><span class="line">epoch: 63, loss: 0.5199928405880928  </span><br><span class="line">epoch: 64, loss: 0.49903774276375773  </span><br><span class="line">epoch: 65, loss: 0.5076868626475334  </span><br><span class="line">epoch: 66, loss: 0.49574834153056146  </span><br><span class="line">epoch: 67, loss: 0.4988365536928177  </span><br><span class="line">epoch: 68, loss: 0.493535383194685  </span><br><span class="line">epoch: 69, loss: 0.4899871605634689  </span><br><span class="line">epoch: 70, loss: 0.48205132633447645  </span><br><span class="line">epoch: 71, loss: 0.4864682650566101  </span><br><span class="line">epoch: 72, loss: 0.4897421237826347  </span><br><span class="line">epoch: 73, loss: 0.4895512466132641  </span><br><span class="line">epoch: 74, loss: 0.47736083701252935  </span><br><span class="line">epoch: 75, loss: 0.4777126996219158  </span><br><span class="line">epoch: 76, loss: 0.5001032407581806  </span><br><span class="line">epoch: 77, loss: 0.4820336607098579  </span><br><span class="line">epoch: 78, loss: 0.4793527925014496  </span><br><span class="line">epoch: 79, loss: 0.4651153042912483  </span><br><span class="line">epoch: 80, loss: 0.49323209330439566  </span><br><span class="line">epoch: 81, loss: 0.4668646648526192  </span><br><span class="line">epoch: 82, loss: 0.4538013879954815  </span><br><span class="line">epoch: 83, loss: 0.45511157006025316  </span><br><span class="line">epoch: 84, loss: 0.45334983691573144  </span><br><span class="line">epoch: 85, loss: 0.47635698661208153  </span><br><span class="line">epoch: 86, loss: 0.46939651399850846  </span><br><span class="line">epoch: 87, loss: 0.4506498329341412  </span><br><span class="line">epoch: 88, loss: 0.4418445238471031  </span><br><span class="line">epoch: 89, loss: 0.44574336722493174  </span><br><span class="line">epoch: 90, loss: 0.4431355035305023  </span><br><span class="line">epoch: 91, loss: 0.4695410135388374  </span><br><span class="line">epoch: 92, loss: 0.44444912031292916  </span><br><span class="line">epoch: 93, loss: 0.4416103033721447  </span><br><span class="line">epoch: 94, loss: 0.4341369004547596  </span><br><span class="line">epoch: 95, loss: 0.4212634059786797  </span><br><span class="line">epoch: 96, loss: 0.4437112210690975  </span><br><span class="line">epoch: 97, loss: 0.4390906804800034  </span><br><span class="line">epoch: 98, loss: 0.43747279345989226  </span><br><span class="line">epoch: 99, loss: 0.4292571568489075  </span><br><span class="line">测试集长度400  </span><br><span class="line">Accuracy: 0.6949999928474426  </span><br><span class="line">"""  </span><br><span class="line">  </span><br><span class="line">"""  </span><br><span class="line">3.Adam epoch 100轮 基础上增加网络的深度  </span><br><span class="line">测试结果0.6949-&gt;0.7574  </span><br><span class="line">"""  </span><br><span class="line">"""  </span><br><span class="line">epoch: 0, loss: 7.851389771997929  </span><br><span class="line">epoch: 1, loss: 0.9970210349559784  </span><br><span class="line">epoch: 2, loss: 0.8884221369028091  </span><br><span class="line">epoch: 3, loss: 0.8639489269256592  </span><br><span class="line">epoch: 4, loss: 0.8350837883353234  </span><br><span class="line">epoch: 5, loss: 0.7872299057245254  </span><br><span class="line">epoch: 6, loss: 0.7771557074785232  </span><br><span class="line">epoch: 7, loss: 0.7591725006699562  </span><br><span class="line">epoch: 8, loss: 0.720463242828846  </span><br><span class="line">epoch: 9, loss: 0.7235965034365655  </span><br><span class="line">epoch: 10, loss: 0.6718987539410591  </span><br><span class="line">epoch: 11, loss: 0.6664036762714386  </span><br><span class="line">epoch: 12, loss: 0.6602874052524567  </span><br><span class="line">epoch: 13, loss: 0.6268059399724006  </span><br><span class="line">epoch: 14, loss: 0.6489547365903854  </span><br><span class="line">epoch: 15, loss: 0.6214226111769676  </span><br><span class="line">epoch: 16, loss: 0.6328188875317573  </span><br><span class="line">epoch: 17, loss: 0.6558645820617676  </span><br><span class="line">epoch: 18, loss: 0.609495358467102  </span><br><span class="line">epoch: 19, loss: 0.6045594757795334  </span><br><span class="line">epoch: 20, loss: 0.6102508479356765  </span><br><span class="line">epoch: 21, loss: 0.5936163213849067  </span><br><span class="line">epoch: 22, loss: 0.5829753457009792  </span><br><span class="line">epoch: 23, loss: 0.6104997199773788  </span><br><span class="line">epoch: 24, loss: 0.5892179098725319  </span><br><span class="line">epoch: 25, loss: 0.5677867107093334  </span><br><span class="line">epoch: 26, loss: 0.5677640178799629  </span><br><span class="line">epoch: 27, loss: 0.5717066903412342  </span><br><span class="line">epoch: 28, loss: 0.5719640903174877  </span><br><span class="line">epoch: 29, loss: 0.5538903501629829  </span><br><span class="line">epoch: 30, loss: 0.5610369518399239  </span><br><span class="line">epoch: 31, loss: 0.5510302808880806  </span><br><span class="line">epoch: 32, loss: 0.5457996129989624  </span><br><span class="line">epoch: 33, loss: 0.5722212250530719  </span><br><span class="line">epoch: 34, loss: 0.5387746152281762  </span><br><span class="line">epoch: 35, loss: 0.5350206056237221  </span><br><span class="line">epoch: 36, loss: 0.5226894295215607  </span><br><span class="line">epoch: 37, loss: 0.5161970874667168  </span><br><span class="line">epoch: 38, loss: 0.504607825577259  </span><br><span class="line">epoch: 39, loss: 0.5036928367614746  </span><br><span class="line">epoch: 40, loss: 0.4980189074575901  </span><br><span class="line">epoch: 41, loss: 0.49016822010278704  </span><br><span class="line">epoch: 42, loss: 0.5002058678865433  </span><br><span class="line">epoch: 43, loss: 0.496014616638422  </span><br><span class="line">epoch: 44, loss: 0.49811404511332513  </span><br><span class="line">epoch: 45, loss: 0.49547331377863885  </span><br><span class="line">epoch: 46, loss: 0.48895796209573744  </span><br><span class="line">epoch: 47, loss: 0.4790066564083099  </span><br><span class="line">epoch: 48, loss: 0.4788760893046856  </span><br><span class="line">epoch: 49, loss: 0.4810006584227085  </span><br><span class="line">epoch: 50, loss: 0.45896210908889773  </span><br><span class="line">epoch: 51, loss: 0.463848420381546  </span><br><span class="line">epoch: 52, loss: 0.4647593882679939  </span><br><span class="line">epoch: 53, loss: 0.469947093129158  </span><br><span class="line">epoch: 54, loss: 0.4335666833817959  </span><br><span class="line">epoch: 55, loss: 0.43692257449030875  </span><br><span class="line">epoch: 56, loss: 0.4342721386253834  </span><br><span class="line">epoch: 57, loss: 0.47110655561089515  </span><br><span class="line">epoch: 58, loss: 0.43793902933597567  </span><br><span class="line">epoch: 59, loss: 0.42252916753292086  </span><br><span class="line">epoch: 60, loss: 0.44694752991199493  </span><br><span class="line">epoch: 61, loss: 0.4337158866971731  </span><br><span class="line">epoch: 62, loss: 0.42959210127592085  </span><br><span class="line">epoch: 63, loss: 0.411399874612689  </span><br><span class="line">epoch: 64, loss: 0.41729282453656197  </span><br><span class="line">epoch: 65, loss: 0.3995138502120972  </span><br><span class="line">epoch: 66, loss: 0.3811160506308079  </span><br><span class="line">epoch: 67, loss: 0.40758338160812857  </span><br><span class="line">epoch: 68, loss: 0.39641142562031745  </span><br><span class="line">epoch: 69, loss: 0.3888055239617825  </span><br><span class="line">epoch: 70, loss: 0.41360979557037353  </span><br><span class="line">epoch: 71, loss: 0.3983050279319286  </span><br><span class="line">epoch: 72, loss: 0.38077782198786736  </span><br><span class="line">epoch: 73, loss: 0.3632614704966545  </span><br><span class="line">epoch: 74, loss: 0.3616841658949852  </span><br><span class="line">epoch: 75, loss: 0.3574983975291252  </span><br><span class="line">epoch: 76, loss: 0.3555416603386402  </span><br><span class="line">epoch: 77, loss: 0.3659656098484993  </span><br><span class="line">epoch: 78, loss: 0.37434227801859377  </span><br><span class="line">epoch: 79, loss: 0.3401754179596901  </span><br><span class="line">epoch: 80, loss: 0.3472818361222744  </span><br><span class="line">epoch: 81, loss: 0.38291696816682813  </span><br><span class="line">epoch: 82, loss: 0.35954486563801763  </span><br><span class="line">epoch: 83, loss: 0.341165456622839  </span><br><span class="line">epoch: 84, loss: 0.33266916431486604  </span><br><span class="line">epoch: 85, loss: 0.3249468857049942  </span><br><span class="line">epoch: 86, loss: 0.3147893760353327  </span><br><span class="line">epoch: 87, loss: 0.3061233828961849  </span><br><span class="line">epoch: 88, loss: 0.295770742893219  </span><br><span class="line">epoch: 89, loss: 0.3101553897559643  </span><br><span class="line">epoch: 90, loss: 0.3016770103573799  </span><br><span class="line">epoch: 91, loss: 0.3297201792895794  </span><br><span class="line">epoch: 92, loss: 0.3151050249487162  </span><br><span class="line">epoch: 93, loss: 0.3275098591297865  </span><br><span class="line">epoch: 94, loss: 0.31084897376596926  </span><br><span class="line">epoch: 95, loss: 0.3457706233114004  </span><br><span class="line">epoch: 96, loss: 0.33469672545790674  </span><br><span class="line">epoch: 97, loss: 0.3066101470589638  </span><br><span class="line">epoch: 98, loss: 0.3159142584353685  </span><br><span class="line">epoch: 99, loss: 0.3368080408871174  </span><br><span class="line">测试集长度400  </span><br><span class="line">Accuracy: 0.7574999928474426  </span><br><span class="line">"""  </span><br><span class="line">  </span><br><span class="line">"""  </span><br><span class="line">4.Adam epoch 100轮 基础上增加网络的深度基础上调小学习率l为0.001-&gt;0.0001  </span><br><span class="line">测试结果0.7574-&gt;0.6924  </span><br><span class="line">"""  </span><br><span class="line">"""  </span><br><span class="line">epoch: 0, loss: 3.0840344697237017  </span><br><span class="line">epoch: 1, loss: 1.5451493176817894  </span><br><span class="line">epoch: 2, loss: 1.327148703634739  </span><br><span class="line">epoch: 3, loss: 1.3336651197075844  </span><br><span class="line">epoch: 4, loss: 1.3349863415956498  </span><br><span class="line">epoch: 5, loss: 1.2945963642001153  </span><br><span class="line">epoch: 6, loss: 1.2003301563858986  </span><br><span class="line">epoch: 7, loss: 1.1930699783563614  </span><br><span class="line">epoch: 8, loss: 1.1203460648655892  </span><br><span class="line">epoch: 9, loss: 1.0973231944441795  </span><br><span class="line">epoch: 10, loss: 1.0605917519330978  </span><br><span class="line">epoch: 11, loss: 1.0369335909187793  </span><br><span class="line">epoch: 12, loss: 1.0012499344348909  </span><br><span class="line">epoch: 13, loss: 0.9983168925344944  </span><br><span class="line">epoch: 14, loss: 0.9603827460110188  </span><br><span class="line">epoch: 15, loss: 0.9653248009085655  </span><br><span class="line">epoch: 16, loss: 0.9361859348416328  </span><br><span class="line">epoch: 17, loss: 0.931022043377161  </span><br><span class="line">epoch: 18, loss: 0.921102050691843  </span><br><span class="line">epoch: 19, loss: 0.9158517447113991  </span><br><span class="line">epoch: 20, loss: 0.8907072781026364  </span><br><span class="line">epoch: 21, loss: 0.8891267684102059  </span><br><span class="line">epoch: 22, loss: 0.8761612120270729  </span><br><span class="line">epoch: 23, loss: 0.8464514350891114  </span><br><span class="line">epoch: 24, loss: 0.8324781420826912  </span><br><span class="line">epoch: 25, loss: 0.8326946014165878  </span><br><span class="line">epoch: 26, loss: 0.8169565165042877  </span><br><span class="line">epoch: 27, loss: 0.8074700736999512  </span><br><span class="line">epoch: 28, loss: 0.7963642011582851  </span><br><span class="line">epoch: 29, loss: 0.7960530652105808  </span><br><span class="line">epoch: 30, loss: 0.7906503492593765  </span><br><span class="line">epoch: 31, loss: 0.7898775346577167  </span><br><span class="line">epoch: 32, loss: 0.783131118863821  </span><br><span class="line">epoch: 33, loss: 0.781529910415411  </span><br><span class="line">epoch: 34, loss: 0.7892217168211937  </span><br><span class="line">epoch: 35, loss: 0.7817794516682625  </span><br><span class="line">epoch: 36, loss: 0.7782997880876065  </span><br><span class="line">epoch: 37, loss: 0.7749508190155029  </span><br><span class="line">epoch: 38, loss: 0.7632702451944351  </span><br><span class="line">epoch: 39, loss: 0.7530144111812115  </span><br><span class="line">epoch: 40, loss: 0.7473503205180169  </span><br><span class="line">epoch: 41, loss: 0.745449420362711  </span><br><span class="line">epoch: 42, loss: 0.7419774769246579  </span><br><span class="line">epoch: 43, loss: 0.7302010421454906  </span><br><span class="line">epoch: 44, loss: 0.7292638853192329  </span><br><span class="line">epoch: 45, loss: 0.7260328823328018  </span><br><span class="line">epoch: 46, loss: 0.7120092821121216  </span><br><span class="line">epoch: 47, loss: 0.7172987492382527  </span><br><span class="line">epoch: 48, loss: 0.709182160794735  </span><br><span class="line">epoch: 49, loss: 0.696059193611145  </span><br><span class="line">epoch: 50, loss: 0.6983401773869992  </span><br><span class="line">epoch: 51, loss: 0.6819135183095932  </span><br><span class="line">epoch: 52, loss: 0.6821192353963852  </span><br><span class="line">epoch: 53, loss: 0.6876867526769638  </span><br><span class="line">epoch: 54, loss: 0.6843635727465153  </span><br><span class="line">epoch: 55, loss: 0.6800607572495937  </span><br><span class="line">epoch: 56, loss: 0.6798545821011066  </span><br><span class="line">epoch: 57, loss: 0.6794058808684349  </span><br><span class="line">epoch: 58, loss: 0.6731237821280956  </span><br><span class="line">epoch: 59, loss: 0.6770968988537789  </span><br><span class="line">epoch: 60, loss: 0.6626102268695832  </span><br><span class="line">epoch: 61, loss: 0.6612403041124344  </span><br><span class="line">epoch: 62, loss: 0.6506331734359264  </span><br><span class="line">epoch: 63, loss: 0.6419569978117943  </span><br><span class="line">epoch: 64, loss: 0.6297246097028255  </span><br><span class="line">epoch: 65, loss: 0.6246367828547954  </span><br><span class="line">epoch: 66, loss: 0.6187920700013637  </span><br><span class="line">epoch: 67, loss: 0.6138638806343079  </span><br><span class="line">epoch: 68, loss: 0.5977328085899353  </span><br><span class="line">epoch: 69, loss: 0.5976980033516884  </span><br><span class="line">epoch: 70, loss: 0.5895904509723187  </span><br><span class="line">epoch: 71, loss: 0.584621531367302  </span><br><span class="line">epoch: 72, loss: 0.5801691494882106  </span><br><span class="line">epoch: 73, loss: 0.5734678441286087  </span><br><span class="line">epoch: 74, loss: 0.5721678586304187  </span><br><span class="line">epoch: 75, loss: 0.5658120952546597  </span><br><span class="line">epoch: 76, loss: 0.5610515208542347  </span><br><span class="line">epoch: 77, loss: 0.5613996696472168  </span><br><span class="line">epoch: 78, loss: 0.5489769187569619  </span><br><span class="line">epoch: 79, loss: 0.5505187904834747  </span><br><span class="line">epoch: 80, loss: 0.5468631337583065  </span><br><span class="line">epoch: 81, loss: 0.5403003656864166  </span><br><span class="line">epoch: 82, loss: 0.5409926307201386  </span><br><span class="line">epoch: 83, loss: 0.5400750379264355  </span><br><span class="line">epoch: 84, loss: 0.5369105798006057  </span><br><span class="line">epoch: 85, loss: 0.5318196856975556  </span><br><span class="line">epoch: 86, loss: 0.5336683058738708  </span><br><span class="line">epoch: 87, loss: 0.5311274705827236  </span><br><span class="line">epoch: 88, loss: 0.5282215039432049  </span><br><span class="line">epoch: 89, loss: 0.5276228564977646  </span><br><span class="line">epoch: 90, loss: 0.5311052440106869  </span><br><span class="line">epoch: 91, loss: 0.5230608628690243  </span><br><span class="line">epoch: 92, loss: 0.5220208606123924  </span><br><span class="line">epoch: 93, loss: 0.5244605912268162  </span><br><span class="line">epoch: 94, loss: 0.5199666151404381  </span><br><span class="line">epoch: 95, loss: 0.521079681366682  </span><br><span class="line">epoch: 96, loss: 0.5173311483860016  </span><br><span class="line">epoch: 97, loss: 0.5113451790809631  </span><br><span class="line">epoch: 98, loss: 0.4996529005467892  </span><br><span class="line">epoch: 99, loss: 0.502519653737545  </span><br><span class="line">测试集长度400  </span><br><span class="line">Accuracy: 0.6924999952316284  </span><br><span class="line">"""  </span><br><span class="line">  </span><br><span class="line">"""  </span><br><span class="line">5.在4基础上进行批量标准化 ！！！  </span><br><span class="line">测试结果0.6924-&gt;0.9150  </span><br><span class="line">"""  </span><br><span class="line">"""  </span><br><span class="line">epoch: 0, loss: 1.3473928344249726  </span><br><span class="line">epoch: 1, loss: 1.0779300993680954  </span><br><span class="line">epoch: 2, loss: 0.6769292542338371  </span><br><span class="line">epoch: 3, loss: 0.4622854799032211  </span><br><span class="line">epoch: 4, loss: 0.35393539771437643  </span><br><span class="line">epoch: 5, loss: 0.2901121652126312  </span><br><span class="line">epoch: 6, loss: 0.24721767693758012  </span><br><span class="line">epoch: 7, loss: 0.21561428040266037  </span><br><span class="line">epoch: 8, loss: 0.19100126676261425  </span><br><span class="line">epoch: 9, loss: 0.17095726534724234  </span><br><span class="line">epoch: 10, loss: 0.15410168439149857  </span><br><span class="line">epoch: 11, loss: 0.13964992813766003  </span><br><span class="line">epoch: 12, loss: 0.1270396165177226  </span><br><span class="line">epoch: 13, loss: 0.11589255895465612  </span><br><span class="line">epoch: 14, loss: 0.10594586277380585  </span><br><span class="line">epoch: 15, loss: 0.0970085372403264  </span><br><span class="line">epoch: 16, loss: 0.08894156640395522  </span><br><span class="line">epoch: 17, loss: 0.08158831045962871  </span><br><span class="line">epoch: 18, loss: 0.07495479788631201  </span><br><span class="line">epoch: 19, loss: 0.06885862467810512  </span><br><span class="line">epoch: 20, loss: 0.0633278263034299  </span><br><span class="line">epoch: 21, loss: 0.05821763668209314  </span><br><span class="line">epoch: 22, loss: 0.05341422793455422  </span><br><span class="line">epoch: 23, loss: 0.0490456200344488  </span><br><span class="line">epoch: 24, loss: 0.04494504788890481  </span><br><span class="line">epoch: 25, loss: 0.041134274597279724  </span><br><span class="line">epoch: 26, loss: 0.03765007328474894  </span><br><span class="line">epoch: 27, loss: 0.03442370982374996  </span><br><span class="line">epoch: 28, loss: 0.03144780250731856  </span><br><span class="line">epoch: 29, loss: 0.028762142272898927  </span><br><span class="line">epoch: 30, loss: 0.026257091491715984  </span><br><span class="line">epoch: 31, loss: 0.02398402206134051  </span><br><span class="line">epoch: 32, loss: 0.021913585582515226  </span><br><span class="line">epoch: 33, loss: 0.020027004692237824  </span><br><span class="line">epoch: 34, loss: 0.018286017478676513  </span><br><span class="line">epoch: 35, loss: 0.016667044612113387  </span><br><span class="line">epoch: 36, loss: 0.015178913411218672  </span><br><span class="line">epoch: 37, loss: 0.013801220973255113  </span><br><span class="line">epoch: 38, loss: 0.012496744439704343  </span><br><span class="line">epoch: 39, loss: 0.011308025683974847  </span><br><span class="line">epoch: 40, loss: 0.010180478024994954  </span><br><span class="line">epoch: 41, loss: 0.009151340004173107  </span><br><span class="line">epoch: 42, loss: 0.008198333949549124  </span><br><span class="line">epoch: 43, loss: 0.007349141094018705  </span><br><span class="line">epoch: 44, loss: 0.006576093708281406  </span><br><span class="line">epoch: 45, loss: 0.00591099270619452  </span><br><span class="line">epoch: 46, loss: 0.005327629507519305  </span><br><span class="line">epoch: 47, loss: 0.004809002253750805  </span><br><span class="line">epoch: 48, loss: 0.004361256179981865  </span><br><span class="line">epoch: 49, loss: 0.00395819523721002  </span><br><span class="line">epoch: 50, loss: 0.003607371071411762  </span><br><span class="line">epoch: 51, loss: 0.0032964923133840785  </span><br><span class="line">epoch: 52, loss: 0.0030205934210971465  </span><br><span class="line">epoch: 53, loss: 0.0027719083527335897  </span><br><span class="line">epoch: 54, loss: 0.002547937938652467  </span><br><span class="line">epoch: 55, loss: 0.002344988305849256  </span><br><span class="line">epoch: 56, loss: 0.0021626047413155903  </span><br><span class="line">epoch: 57, loss: 0.0019961629837052896  </span><br><span class="line">epoch: 58, loss: 0.0018459023503965  </span><br><span class="line">epoch: 59, loss: 0.0017071093623235356  </span><br><span class="line">epoch: 60, loss: 0.0015815913167898544  </span><br><span class="line">epoch: 61, loss: 0.0014656257031310815  </span><br><span class="line">epoch: 62, loss: 0.0013595627021277324  </span><br><span class="line">epoch: 63, loss: 0.001262160987535026  </span><br><span class="line">epoch: 64, loss: 0.0011724843426782173  </span><br><span class="line">epoch: 65, loss: 0.0010894116427880363  </span><br><span class="line">epoch: 66, loss: 0.0010127840144195943  </span><br><span class="line">epoch: 67, loss: 0.0009422034812450875  </span><br><span class="line">epoch: 68, loss: 0.0008771430133856484  </span><br><span class="line">epoch: 69, loss: 0.0008162261312099872  </span><br><span class="line">epoch: 70, loss: 0.0007608034041186329  </span><br><span class="line">epoch: 71, loss: 0.0007088108949392335  </span><br><span class="line">epoch: 72, loss: 0.0006610116305819247  </span><br><span class="line">epoch: 73, loss: 0.0006165707464060688  </span><br><span class="line">epoch: 74, loss: 0.0005753825213650998  </span><br><span class="line">epoch: 75, loss: 0.0005368841231393162  </span><br><span class="line">epoch: 76, loss: 0.0005011844427644974  </span><br><span class="line">epoch: 77, loss: 0.00046801683287412744  </span><br><span class="line">epoch: 78, loss: 0.00043722966556742905  </span><br><span class="line">epoch: 79, loss: 0.00040857210320609737  </span><br><span class="line">epoch: 80, loss: 0.0003818463465722743  </span><br><span class="line">epoch: 81, loss: 0.0003570368622240494  </span><br><span class="line">epoch: 82, loss: 0.00033390767216587844  </span><br><span class="line">epoch: 83, loss: 0.00031233140963195184  </span><br><span class="line">epoch: 84, loss: 0.00029226068075331567  </span><br><span class="line">epoch: 85, loss: 0.0002735318736631598  </span><br><span class="line">epoch: 86, loss: 0.00025596911162210743  </span><br><span class="line">epoch: 87, loss: 0.00023967981369423796  </span><br><span class="line">epoch: 88, loss: 0.00022440169454966962  </span><br><span class="line">epoch: 89, loss: 0.00021027539896749657  </span><br><span class="line">epoch: 90, loss: 0.00019705498407347478  </span><br><span class="line">epoch: 91, loss: 0.00018460659868196671  </span><br><span class="line">epoch: 92, loss: 0.00017302928762092052  </span><br><span class="line">epoch: 93, loss: 0.00016220542194332664  </span><br><span class="line">epoch: 94, loss: 0.00015218153730529594  </span><br><span class="line">epoch: 95, loss: 0.0001426160395567422  </span><br><span class="line">epoch: 96, loss: 0.0001337964284221016  </span><br><span class="line">epoch: 97, loss: 0.0001255034537643951  </span><br><span class="line">epoch: 98, loss: 0.0001177752389367015  </span><br><span class="line">epoch: 99, loss: 0.00011050879825234006  </span><br><span class="line">测试集长度400  </span><br><span class="line">Accuracy: 0.9150000214576721  </span><br><span class="line">"""</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/deeplearning/" rel="tag"># deeplearning</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/29/%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%EF%BC%9A%E4%BB%8E%E7%9F%A9%E9%98%B5%E8%AE%A1%E7%AE%97%E5%88%B0%E6%A2%AF%E5%BA%A6%E6%9B%B4%E6%96%B0/" rel="prev" title="反向传播：从矩阵计算到梯度更新">
+                  <i class="fa fa-angle-left"></i> 反向传播：从矩阵计算到梯度更新
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class=""></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Kevin</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>Word count total: </span>
+    <span title="Word count total">7k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>Reading time total &asymp;</span>
+    <span title="Reading time total">24 mins.</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div><div id="site-runtime">
+  本站已安全运行
+  <span id="site-runtime-value">正在计算...</span>
+  <span class="footer-motto">
+    blue blue blue time
+  </span>
+</div>
+
+<script>
+(() => {
+  // 修改为你的博客正式开始运行时间
+  const startTime = new Date('2026-10-12T00:00:00+08:00').getTime();
+  const output = document.getElementById('site-runtime-value');
+
+  function updateRuntime() {
+    let seconds = Math.max(
+      0,
+      Math.floor((Date.now() - startTime) / 1000)
+    );
+
+    const days = Math.floor(seconds / 86400);
+    seconds %= 86400;
+
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const pad = value => String(value).padStart(2, '0');
+
+    output.textContent =
+      `${days} 天 ${pad(hours)} 小时 ` +
+      `${pad(minutes)} 分 ${pad(remainingSeconds)} 秒`;
+  }
+
+  updateRuntime();
+  setInterval(updateRuntime, 1000);
+})();
+</script>
+
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/neepu-kevin" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<!-- Three.js 基础库 -->
+<script defer src="https://cdn.jsdelivr.net/gh/theme-next/theme-next-three@1/three.min.js"></script>
+
+<!-- 鼠标跟随星点连线动画 -->
+<script defer src="https://cdn.jsdelivr.net/gh/theme-next/theme-next-three@1/canvas_lines.min.js"></script>
+<!-- hexo injector body_end start --><script src="/js/tagcanvas.js"></script><script src="/js/tagcloud.js"></script><!-- hexo injector body_end end --></body>
+</html>
